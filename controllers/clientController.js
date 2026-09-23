@@ -93,3 +93,36 @@ exports.createClient = async (req, res) => {
         res.status(500).json({ success: false, message: err.message });
     }
 };
+// Cập nhật thông tin khách hàng
+exports.updateClient = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { companyName, address, contactPerson, contactEmail, contactPhone, paymentTermDays, status } = req.body;
+
+        const client = await Client.findByPk(id);
+        if (!client) {
+            return res.status(404).json({ success: false, message: 'Không tìm thấy khách hàng để cập nhật!' });
+        }
+
+        if (companyName) client.companyName = companyName.trim();
+        if (address !== undefined) client.address = address.trim();
+        if (contactPerson !== undefined) client.contactPerson = contactPerson.trim();
+        if (contactEmail !== undefined) client.contactEmail = contactEmail.trim();
+        if (contactPhone !== undefined) client.contactPhone = contactPhone.trim();
+        if (paymentTermDays !== undefined) client.paymentTermDays = parseInt(paymentTermDays);
+        if (status !== undefined) client.status = status;
+
+        await client.save();
+
+        await AuditLog.create({
+            userId: req.user ? req.user.id : null,
+            action: 'UPDATE_CLIENT',
+            module: 'CLIENTS',
+            details: `Cập nhật thông tin khách hàng ID ${id}: ${client.companyName}`
+        });
+
+        res.json({ success: true, message: 'Cập nhật thông tin khách hàng thành công!', client });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+};
