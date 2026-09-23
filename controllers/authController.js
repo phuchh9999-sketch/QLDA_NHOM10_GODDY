@@ -103,3 +103,15 @@ exports.register = async (req, res) => {
         res.status(500).json({ success: false, message: err.message });
     }
 };
+// Lấy danh sách người dùng trong hệ thống
+exports.getUsers = async (req, res) => {
+    try {
+        const users = await User.findAll({
+            attributes: { exclude: ['password'] },
+            order: [['id', 'ASC']]
+        });
+        res.json({ success: true, users });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+};
