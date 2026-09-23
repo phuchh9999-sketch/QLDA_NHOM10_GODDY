@@ -33,4 +33,21 @@ exports.getClients = async (req, res) => {
     res.status(500).json({ success: false, message: err.message });
   }
 };
+// Lấy thông tin chi tiết một khách hàng
+exports.getClientById = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const client = await Client.findByPk(id, {
+            include: [Job, Placement, Invoice]
+        });
+
+        if (!client) {
+            return res.status(404).json({ success: false, message: 'Không tìm thấy khách hàng!' });
+        }
+
+        res.json({ success: true, client });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+};
 
