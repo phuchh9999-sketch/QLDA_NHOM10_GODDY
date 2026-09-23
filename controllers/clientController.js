@@ -126,3 +126,11 @@ exports.updateClient = async (req, res) => {
         res.status(500).json({ success: false, message: err.message });
     }
 };
+// Xóa khách hàng (hoặc chuyển trạng thái Ngừng hoạt động)
+exports.deleteClient = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const client = await Client.findByPk(id);
+        if (!client) {
+            return res.status(404).json({ success: false, message: 'Không tìm thấy khách hàng!' });
+        }
