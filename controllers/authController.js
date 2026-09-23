@@ -58,3 +58,48 @@ exports.login = async (req, res) => {
     res.status(500).json({ success: false, message: err.message });
   }
 };
+// Đăng ký tài khoản nhân viên mới
+exports.register = async (req, res) => {
+    try {
+        const { username, email, password, fullName, role } = req.body;
+        if (!username || !email || !password || !fullName) {
+            return res.status(400).json({ success: false, message: 'Vui lòng điền đầy đủ các thông tin đăng ký!' });
+        }
+
+        const existingUser = await User.findOne({ where: { username: username.trim() } });
+        if (existingUser) {
+            return res.status(400).json({ success: false, message: 'Tên tài khoản này đã được sử dụng!' });
+        }
+
+        const hashPassword = await bcrypt.hash(password, 10);
+        const newUser = await User.create({
+            username: username.trim(),
+            email: email.trim(),
+            password: hashPassword,
+            fullName: fullName.trim(),
+            role: role || 'recruiter',
+            isActive: true
+        });
+
+        await AuditLog.create({
+            userId: req.user ? req.user.id : null,
+            action: 'REGISTER_USER',
+            module: 'AUTH',
+            details: `Tạo mới tài khoản nhân viên: ${newUser.username} (${newUser.fullName}, vai trò: ${newUser.role})`
+        });
+
+        res.status(201).json({
+            success: true,
+            message: 'Đăng ký tài khoản thành công!',
+            user: {
+                id: newUser.id,
+                username: newUser.username,
+                fullName: newUser.fullName,
+                role: newUser.role,
+                email: newUser.email
+            }
+        });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+};
