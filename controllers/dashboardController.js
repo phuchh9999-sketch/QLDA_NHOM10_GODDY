@@ -27,5 +27,9 @@ exports.getDashboardStats = async (req, res) => {
         overdueAR += remaining;
       }
     });
+        // Tinh ty le thu hoi cong no (%)
+        const totalBilled = totalRevenue + totalAR;
+        const collectionRate = totalBilled > 0 ? ((totalRevenue / totalBilled) * 100).toFixed(1) : 0;
+        const badDebtRate = totalAR > 0 ? ((overdueAR / totalAR) * 100).toFixed(1) : 0;
 
     
