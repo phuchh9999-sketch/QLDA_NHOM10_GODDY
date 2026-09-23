@@ -134,3 +134,30 @@ exports.deleteClient = async (req, res) => {
         if (!client) {
             return res.status(404).json({ success: false, message: 'Không tìm thấy khách hàng!' });
         }
+        // Kiểm tra xem khách hàng có hóa đơn còn nợ không
+        const openInvoices = await Invoice.count({
+            where: { clientId: id, status: { [Op.in]: ['Sent', 'Partial', 'Overdue'] } }
+        });
+
+        if (openInvoices > 0) {
+            return res.status(400).json({
+                success: false,
+                message: `Khách hàng này hiện có ${openInvoices} hóa đơn chưa tất toán công nợ, không thể xóa!`
+            });
+        }
+
+        const companyName = client.companyName;
+        await client.destroy();
+
+        await AuditLog.create({
+            userId: req.user ? req.user.id : null,
+            action: 'DELETE_CLIENT',
+            module: 'CLIENTS',
+            details: `Đã xóa khách hàng: ${companyName} (ID: ${id})`
+        });
+
+        res.json({ success: true, message: `Đã xóa khách hàng ${companyName} thành công!` });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+};
