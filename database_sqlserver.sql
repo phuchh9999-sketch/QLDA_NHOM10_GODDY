@@ -1,0 +1,1 @@
+-- GODDY RECRUIT - Database Script SQL Server
