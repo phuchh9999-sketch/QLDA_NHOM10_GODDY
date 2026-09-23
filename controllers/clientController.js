@@ -64,4 +64,32 @@ exports.createClient = async (req, res) => {
         if (!/^\d{10}(\d{3})?$/.test(cleanTaxCode)) {
             return res.status(400).json({ success: false, message: 'Mã số thuế không hợp lệ! (Phải gồm 10 hoặc 13 chữ số)' });
         }
+        // Kiểm tra trùng lặp MST
+        const exist = await Client.findOne({ where: { taxCode: cleanTaxCode } });
+        if (exist) {
+            return res.status(400).json({ success: false, message: 'Mã số thuế này đã tồn tại trong hệ thống!' });
+        }
 
+        const newClient = await Client.create({
+            companyName: companyName.trim(),
+            taxCode: cleanTaxCode,
+            address: address ? address.trim() : '',
+            contactPerson: contactPerson ? contactPerson.trim() : '',
+            contactEmail: contactEmail ? contactEmail.trim() : '',
+            contactPhone: contactPhone ? contactPhone.trim() : '',
+            paymentTermDays: parseInt(paymentTermDays) || 30,
+            status: 'Active'
+        });
+
+        await AuditLog.create({
+            userId: req.user ? req.user.id : null,
+            action: 'CREATE_CLIENT',
+            module: 'CLIENTS',
+            details: `Thêm mới đối tác B2B: ${newClient.companyName} (MST: ${newClient.taxCode})`
+        });
+
+        res.status(201).json({ success: true, message: 'Thêm khách hàng thành công!', client: newClient });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+};
