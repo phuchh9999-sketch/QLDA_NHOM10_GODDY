@@ -161,3 +161,87 @@ exports.deleteClient = async (req, res) => {
         res.status(500).json({ success: false, message: err.message });
     }
 };
+// Lấy toàn bộ dữ liệu tổng hợp cho Cổng thông tin Khách hàng (Client Portal)
+exports.getClientPortalData = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const client = await Client.findByPk(id, {
+            include: [
+                { model: Job },
+                {
+                    model: Placement,
+                    include: [
+                        { model: Candidate, attributes: ['id', 'fullName', 'email', 'phone', 'currentPosition'] },
+                        { model: Job, attributes: ['id', 'title', 'department'] }
+                    ]
+                },
+                {
+                    model: Invoice,
+                    include: [{ model: Payment }]
+                }
+            ]
+        });
+
+        if (!client) {
+            return res.status(404).json({ success: false, message: 'Không tìm thấy thông tin khách hàng!' });
+        }
+
+        let totalInvoiced = 0;
+        let totalPaid = 0;
+        let totalRemaining = 0;
+        let overdueCount = 0;
+
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        const invoices = (client.Invoices || []).map(inv => {
+            const invObj = inv.toJSON();
+            totalInvoiced += parseFloat(inv.totalAmount || 0);
+            totalPaid += parseFloat(inv.paidAmount || 0);
+            totalRemaining += parseFloat(inv.remainingAmount || 0);
+
+            const dueDate = new Date(inv.dueDate);
+            dueDate.setHours(0, 0, 0, 0);
+            const overdueDays = Math.max(0, Math.floor((today - dueDate) / (1000 * 60 * 60 * 24)));
+            invObj.overdueDays = overdueDays;
+            if (overdueDays > 0 && inv.remainingAmount > 0) {
+                overdueCount++;
+            }
+            return invObj;
+        });
+
+        const activeJobs = (client.Jobs || []).filter(j => j.status === 'Opening').length;
+        const placements = client.Placements || [];
+        const warrantyActive = placements.filter(p => p.status === 'UnderWarranty').length;
+
+        res.json({
+            success: true,
+            client: {
+                id: client.id,
+                companyName: client.companyName,
+                taxCode: client.taxCode,
+                address: client.address,
+                contactPerson: client.contactPerson,
+                contactEmail: client.contactEmail,
+                contactPhone: client.contactPhone,
+                paymentTermDays: client.paymentTermDays,
+                status: client.status
+            },
+            summary: {
+                totalInvoiced,
+                totalPaid,
+                totalRemaining,
+                overdueCount,
+                totalJobs: (client.Jobs || []).length,
+                activeJobs,
+                totalPlacements: placements.length,
+                warrantyActive
+            },
+            invoices,
+            jobs: client.Jobs || [],
+            placements
+        });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+};
