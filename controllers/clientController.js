@@ -50,4 +50,18 @@ exports.getClientById = async (req, res) => {
         res.status(500).json({ success: false, message: err.message });
     }
 };
+// Thêm mới khách hàng doanh nghiệp
+exports.createClient = async (req, res) => {
+    try {
+        const { companyName, taxCode, address, contactPerson, contactEmail, contactPhone, paymentTermDays } = req.body;
+
+        if (!companyName || !taxCode) {
+            return res.status(400).json({ success: false, message: 'Vui lòng nhập tên công ty và mã số thuế!' });
+        }
+
+        // Kiểm tra định dạng mã số thuế (10 hoặc 13 số)
+        const cleanTaxCode = taxCode.trim().replace('-', '');
+        if (!/^\d{10}(\d{3})?$/.test(cleanTaxCode)) {
+            return res.status(400).json({ success: false, message: 'Mã số thuế không hợp lệ! (Phải gồm 10 hoặc 13 chữ số)' });
+        }
 
