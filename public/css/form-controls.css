@@ -1,0 +1,234 @@
+/* =========================================
+   FE-07: FORM CONTROLS
+   NGUYEN_HOANG_PHUOC
+   ========================================= */
+
+/* ===== BUTTON ===== */
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 38px;
+    padding: 8px 16px;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+}
+
+    .btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+
+/* Primary */
+.btn-primary {
+    background: #2563eb;
+    color: #ffffff;
+}
+
+    .btn-primary:hover {
+        background: #1d4ed8;
+    }
+
+/* Secondary */
+.btn-secondary {
+    background: #ffffff;
+    color: #374151;
+    border-color: #d1d5db;
+}
+
+    .btn-secondary:hover {
+        background: #f3f4f6;
+    }
+
+/* Success */
+.btn-success {
+    background: #16a34a;
+    color: #ffffff;
+}
+
+    .btn-success:hover {
+        background: #15803d;
+    }
+
+/* Danger */
+.btn-danger {
+    background: #dc2626;
+    color: #ffffff;
+}
+
+    .btn-danger:hover {
+        background: #b91c1c;
+    }
+
+/* Warning */
+.btn-warning {
+    background: #f59e0b;
+    color: #ffffff;
+}
+
+    .btn-warning:hover {
+        background: #d97706;
+    }
+
+/* ===== FORM GROUP ===== */
+
+.form-group {
+    margin-bottom: 18px;
+}
+
+.form-label {
+    display: block;
+    margin-bottom: 7px;
+    color: #374151;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.form-required {
+    color: #dc2626;
+    margin-left: 3px;
+}
+
+/* ===== INPUT / SELECT / TEXTAREA ===== */
+
+.form-control,
+.form-select,
+.form-textarea {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 10px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    background: #ffffff;
+    color: #111827;
+    font-family: inherit;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.form-control,
+.form-select {
+    height: 40px;
+}
+
+.form-textarea {
+    min-height: 100px;
+    resize: vertical;
+}
+
+    .form-control::placeholder,
+    .form-textarea::placeholder {
+        color: #9ca3af;
+    }
+
+    .form-control:focus,
+    .form-select:focus,
+    .form-textarea:focus {
+        border-color: #2563eb;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+    }
+
+    .form-control:disabled,
+    .form-select:disabled,
+    .form-textarea:disabled {
+        background: #f3f4f6;
+        color: #6b7280;
+        cursor: not-allowed;
+    }
+
+/* ===== CHECKBOX / RADIO ===== */
+
+.form-check {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+    .form-check input {
+        width: 16px;
+        height: 16px;
+        margin: 0;
+        accent-color: #2563eb;
+    }
+
+    .form-check label {
+        color: #374151;
+        font-size: 14px;
+        cursor: pointer;
+    }
+
+/* ===== HELP TEXT / ERROR ===== */
+
+.form-help {
+    display: block;
+    margin-top: 5px;
+    color: #6b7280;
+    font-size: 12px;
+}
+
+.form-error {
+    display: block;
+    margin-top: 5px;
+    color: #dc2626;
+    font-size: 12px;
+}
+
+/* ===== INVALID ===== */
+
+.form-control.is-invalid,
+.form-select.is-invalid,
+.form-textarea.is-invalid {
+    border-color: #dc2626;
+}
+
+    .form-control.is-invalid:focus,
+    .form-select.is-invalid:focus,
+    .form-textarea.is-invalid:focus {
+        box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.12);
+    }
+
+/* ===== FORM ROW ===== */
+
+.form-row {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+}
+
+/* ===== FORM ACTIONS ===== */
+
+.form-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 24px;
+    padding-top: 18px;
+    border-top: 1px solid #e5e7eb;
+}
+
+/* ===== RESPONSIVE ===== */
+
+@media (max-width: 768px) {
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+
+    .form-actions {
+        flex-wrap: wrap;
+    }
+
+        .form-actions .btn {
+            flex: 1;
+        }
+}

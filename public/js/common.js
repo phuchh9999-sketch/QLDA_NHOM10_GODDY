@@ -71,3 +71,61 @@ function toggleElement(elementId, visible) {
 document.addEventListener("DOMContentLoaded", function () {
     console.log("QLDA_NHOM10_GODDY - Frontend loaded.");
 });
+/* =========================================
+   FE-07: FORM VALIDATION
+   NGUYEN_HOANG_PHUOC
+   ========================================= */
+
+function validateRequiredFields(form) {
+    if (!form) {
+        return false;
+    }
+
+    const requiredFields = form.querySelectorAll(
+        "[required]"
+    );
+
+    let isValid = true;
+
+    requiredFields.forEach(function (field) {
+        const value = field.value.trim();
+
+        field.classList.remove("is-invalid");
+
+        const oldError = field.parentElement.querySelector(
+            ".form-error"
+        );
+
+        if (oldError) {
+            oldError.remove();
+        }
+
+        if (!value) {
+            isValid = false;
+
+            field.classList.add("is-invalid");
+
+            const error = document.createElement("span");
+            error.className = "form-error";
+            error.textContent = "Vui lòng nhập thông tin này.";
+
+            field.parentElement.appendChild(error);
+        }
+    });
+
+    return isValid;
+}
+
+function clearFormErrors(form) {
+    if (!form) {
+        return;
+    }
+
+    form.querySelectorAll(".is-invalid").forEach(function (field) {
+        field.classList.remove("is-invalid");
+    });
+
+    form.querySelectorAll(".form-error").forEach(function (error) {
+        error.remove();
+    });
+}
