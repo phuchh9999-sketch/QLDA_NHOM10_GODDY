@@ -72,3 +72,39 @@ function switchTab(tabKey) {
   if (headerEl) {
     headerEl.textContent = TAB_TITLES[tabKey] || 'GODDY RECRUIT';
   }
+
+    // Tải dữ liệu tương ứng của module
+  if (tabKey === 'dashboard' && typeof loadDashboard === 'function') loadDashboard();
+  if (tabKey === 'clients' && typeof loadClients === 'function') loadClients();
+  if (tabKey === 'recruitment' && typeof loadPlacements === 'function') loadPlacements();
+  if (tabKey === 'invoices' && typeof loadInvoices === 'function') loadInvoices();
+  if (tabKey === 'debt' && typeof loadDebt === 'function') loadDebt();
+  if (tabKey === 'audit' && typeof loadAudit === 'function') loadAudit();
+}
+
+function reloadCurrentTab() {
+  if (currentUserRole === 'client') {
+    if (typeof loadClientPortal === 'function') loadClientPortal(currentClientId);
+  } else {
+    const activeItem = document.querySelector('#sidebarMenuInternal .sidebar-item.active');
+    if (activeItem) {
+      activeItem.click();
+    } else {
+      window.location.reload();
+    }
+  }
+}
+
+function formatMoney(amount) {
+  return (parseFloat(amount) || 0).toLocaleString('vi-VN') + ' đ';
+}
+
+function downloadCSV(csv, filename) {
+  const blob = new Blob(["\uFEFF" + csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
