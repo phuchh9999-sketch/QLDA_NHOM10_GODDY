@@ -60,3 +60,16 @@ exports.getInvoiceById = async (req, res) => {
         res.status(500).json({ success: false, message: err.message });
     }
 };
+// Phát hành hóa đơn dịch vụ từ Deal tuyển dụng
+exports.createInvoiceFromPlacement = async (req, res) => {
+    try {
+        const { placementId, vatRate, dueDate, customNote } = req.body;
+
+        const placement = await Placement.findByPk(placementId, {
+            include: [Client, Job, Candidate]
+        });
+
+        if (!placement) {
+            return res.status(404).json({ success: false, message: 'Không tìm thấy thông tin deal tuyển dụng!' });
+        }
+
