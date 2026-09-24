@@ -61,3 +61,40 @@ exports.updateJob = async (req, res) => {
         res.status(500).json({ success: false, message: err.message });
     }
 };
+// =================== 2. QUẢN LÝ CANDIDATES (ỨNG VIÊN) ===================
+exports.getCandidates = async (req, res) => {
+    try {
+        const candidates = await Candidate.findAll({ order: [['id', 'DESC']] });
+        res.json({ success: true, candidates });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+};
+
+exports.createCandidate = async (req, res) => {
+    try {
+        const { fullName, email, phone, currentPosition } = req.body;
+        if (!fullName || !email) {
+            return res.status(400).json({ success: false, message: 'Vui lòng nhập họ tên và email của ứng viên!' });
+        }
+
+        const candidate = await Candidate.create({
+            fullName: fullName.trim(),
+            email: email.trim(),
+            phone: phone ? phone.trim() : '',
+            currentPosition: currentPosition ? currentPosition.trim() : 'Chuyên viên',
+            status: 'Available'
+        });
+
+        await AuditLog.create({
+            userId: req.user ? req.user.id : null,
+            action: 'CREATE_CANDIDATE',
+            module: 'RECRUITMENT',
+            details: `Thêm hồ sơ ứng viên mới: ${candidate.fullName}`
+        });
+
+        res.status(201).json({ success: true, message: 'Thêm ứng viên thành công!', candidate });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+};
