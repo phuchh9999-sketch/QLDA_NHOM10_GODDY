@@ -129,3 +129,35 @@ exports.createPlacement = async (req, res) => {
         if (isNaN(salary) || salary <= 0) {
             return res.status(400).json({ success: false, message: 'Mức lương chính thức phải là số dương lớn hơn 0!' });
         }
+        // Tính phí dịch vụ Headhunt:
+        // Chuẩn thị trường: Nếu tỉ lệ < 50% => tính theo % lương năm (annual salary * rate / 100), tương đương khoảng 1.5 - 2.5 tháng lương
+        // Hoặc nếu người dùng nhập số tiền trực tiếp:
+        const rate = parseFloat(feeRatePercent) || 18.0;
+        let serviceFee = req.body.serviceFee ? parseFloat(req.body.serviceFee) : null;
+        if (!serviceFee) {
+            if (rate <= 30.0) {
+                // Phí theo % lương năm: (Lương tháng * 12) * (rate / 100)
+                serviceFee = salary * 12 * (rate / 100);
+            } else {
+                // Hoặc tính theo % lương tháng (ví dụ 150% - 200%)
+                serviceFee = salary * (rate / 100);
+            }
+        }
+
+        const days = parseInt(warrantyDays) || 60;
+        const onboard = new Date(onboardDate);
+        const warrantyEnd = new Date(onboard);
+        warrantyEnd.setDate(warrantyEnd.getDate() + days);
+
+        const placement = await Placement.create({
+            jobId,
+            candidateId,
+            clientId,
+            recruiterId: recruiterId || 1,
+            officialSalary: salary,
+            serviceFee,
+            onboardDate,
+            warrantyDays: days,
+            warrantyEndDate: warrantyEnd.toISOString().split('T')[0],
+            status: 'UnderWarranty'
+        });
