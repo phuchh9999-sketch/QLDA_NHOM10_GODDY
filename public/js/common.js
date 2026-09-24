@@ -15,3 +15,23 @@ try {
 let globalClients = [];
 let revenueChartInstance = null;
 let industryChartInstance = null;
+
+// Page mapping for standalone HTML pages vs SPA tabs
+const PAGE_URL_MAP = {
+  'dashboard': 'index.html',
+  'clients': 'clients.html',
+  'recruitment': 'recruitment.html',
+  'invoices': 'invoices.html',
+  'debt': 'debt.html',
+  'audit': 'audit.html',
+  'client-portal': 'client-portal.html'
+};
+
+const TAB_TITLES = {
+  'dashboard': 'Dashboard Dữ Liệu Tuyển Dụng & Tài Chính',
+  'clients': 'Quản Lý Khách Hàng Doanh Nghiệp (B2B)',
+  'recruitment': 'Quản Lý Deal Tuyển Dụng & Thời Hạn Bảo Hành',
+  'invoices': 'Quản Lý Hóa Đơn Dịch Vụ Tuyển Dụng',
+  'debt': 'Báo Cáo Công Nợ & Phân Tích Tuổi Nợ (Aging Report)',
+  'audit': 'Nhật Ký Thao Tác Hệ Thống (Audit Trail)'
+};
