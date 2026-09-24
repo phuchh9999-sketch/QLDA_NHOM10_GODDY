@@ -108,3 +108,169 @@ function downloadCSV(csv, filename) {
   a.click();
   URL.revokeObjectURL(url);
 }
+
+// ================= CLIENT PORTAL & ROLE SWITCHER LOGIC =================
+function switchUserRole(role, clientId = 1) {
+  currentUserRole = role;
+  currentClientId = clientId;
+
+  const roleBadge = document.getElementById('roleBadge');
+  const navRoleTitle = document.getElementById('navRoleTitle');
+  const sidebarMenuInternal = document.getElementById('sidebarMenuInternal');
+  const sidebarMenuClient = document.getElementById('sidebarMenuClient');
+  const sidebarFooterInternal = document.getElementById('sidebarFooterInternal');
+  const sidebarFooterClient = document.getElementById('sidebarFooterClient');
+  const sidebarLogoIcon = document.getElementById('sidebarLogoIcon');
+  const sidebarMainTitle = document.getElementById('sidebarMainTitle');
+  const sidebarSubTitle = document.getElementById('sidebarSubTitle');
+
+  if (role === 'client') {
+    // Nếu trang hiện tại không có section client portal, điều hướng đến client-portal.html
+    const portalSection = document.getElementById('section-client-portal');
+    if (!portalSection) {
+      window.location.href = 'client-portal.html?role=client&clientId=' + clientId;
+      return;
+    }
+
+    if (sidebarMenuInternal) sidebarMenuInternal.style.display = 'none';
+    if (sidebarMenuClient) sidebarMenuClient.style.display = 'block';
+    if (sidebarFooterInternal) sidebarFooterInternal.style.display = 'none';
+    if (sidebarFooterClient) sidebarFooterClient.style.display = 'block';
+
+    if (sidebarLogoIcon) sidebarLogoIcon.innerHTML = '<i class="fa-solid fa-building"></i>';
+    if (sidebarMainTitle) sidebarMainTitle.textContent = 'CỔNG KHÁCH HÀNG';
+
+    if (roleBadge) {
+      roleBadge.className = 'badge bg-primary rounded-pill px-2 py-1';
+      roleBadge.textContent = 'Khách hàng B2B';
+    }
+
+    const clientNames = {
+      1: 'FPT Software (Trần Thu Hà)',
+      2: 'VNG Corporation (Nguyễn Hoàng Long)',
+      3: 'Shopee Việt Nam (Lê Thùy Dương)'
+    };
+    const cName = clientNames[clientId] || 'Doanh Nghiệp Đối Tác';
+    if (navRoleTitle) navRoleTitle.textContent = cName;
+    if (sidebarSubTitle) sidebarSubTitle.textContent = cName.split('(')[0].trim();
+
+    // Ẩn tất cả section nội bộ, hiện section client portal
+    const sections = ['dashboard', 'clients', 'recruitment', 'invoices', 'debt', 'audit'];
+    sections.forEach(s => {
+      const el = document.getElementById('section-' + s);
+      if (el) el.style.display = 'none';
+    });
+    portalSection.style.display = 'block';
+
+    const headerTitle = document.getElementById('pageHeaderTitle');
+    if (headerTitle) {
+      headerTitle.textContent = 'Cổng Thông Tin Doanh Nghiệp - ' + (sidebarSubTitle ? sidebarSubTitle.textContent : '');
+    }
+
+    if (typeof switchClientSubTab === 'function') switchClientSubTab('invoices');
+    if (typeof loadClientPortal === 'function') loadClientPortal(clientId);
+  } else {
+    // Nếu trang hiện tại là client-portal.html, chuyển hướng về index.html
+    const dashboardSection = document.getElementById('section-dashboard');
+    if (!dashboardSection && window.location.pathname.includes('client-portal')) {
+      window.location.href = 'index.html?role=' + role;
+      return;
+    }
+
+    if (sidebarMenuInternal) sidebarMenuInternal.style.display = 'block';
+    if (sidebarMenuClient) sidebarMenuClient.style.display = 'none';
+    if (sidebarFooterInternal) sidebarFooterInternal.style.display = 'block';
+    if (sidebarFooterClient) sidebarFooterClient.style.display = 'none';
+
+    if (sidebarLogoIcon) sidebarLogoIcon.innerHTML = '<i class="fa-solid fa-chart-pie"></i>';
+    if (sidebarMainTitle) sidebarMainTitle.textContent = 'GODDY RECRUIT';
+    if (sidebarSubTitle) sidebarSubTitle.textContent = 'Quản Lý Công Nợ B2B';
+
+    const clientPortalSection = document.getElementById('section-client-portal');
+    if (clientPortalSection) clientPortalSection.style.display = 'none';
+
+    if (role === 'admin') {
+      if (roleBadge) {
+        roleBadge.className = 'badge bg-danger rounded-pill px-2 py-1';
+        roleBadge.textContent = 'Admin';
+      }
+      if (navRoleTitle) navRoleTitle.textContent = 'Huỳnh Nguyễn Vĩnh Phúc';
+    } else if (role === 'accountant') {
+      if (roleBadge) {
+        roleBadge.className = 'badge bg-success rounded-pill px-2 py-1';
+        roleBadge.textContent = 'Kế toán';
+      }
+      if (navRoleTitle) navRoleTitle.textContent = 'Phạm Sơn (Kế toán trưởng)';
+    } else if (role === 'recruiter') {
+      if (roleBadge) {
+        roleBadge.className = 'badge bg-warning text-dark rounded-pill px-2 py-1';
+        roleBadge.textContent = 'Recruiter';
+      }
+      if (navRoleTitle) navRoleTitle.textContent = 'Nguyễn Văn Minh (Senior)';
+    }
+
+    if (dashboardSection) {
+      switchTab('dashboard');
+    }
+  }
+}
+
+function openLoginModal() {
+  const modalEl = document.getElementById('modalLogin');
+  if (modalEl) {
+    new bootstrap.Modal(modalEl).show();
+  } else {
+    alert('Không tìm thấy hộp thoại đăng nhập!');
+  }
+}
+
+function quickFillLogin(username, password) {
+  const u = document.getElementById('loginUsername');
+  const p = document.getElementById('loginPassword');
+  if (u) u.value = username;
+  if (p) p.value = password;
+}
+
+async function submitLogin(e) {
+  e.preventDefault();
+  const usernameInput = document.getElementById('loginUsername');
+  const passwordInput = document.getElementById('loginPassword');
+  if (!usernameInput || !passwordInput) return;
+
+  const username = usernameInput.value.trim();
+  const password = passwordInput.value;
+
+  try {
+    const res = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password })
+    });
+    const data = await res.json();
+    if (data.success) {
+      if (data.token) {
+        localStorage.setItem('goddy_token', data.token);
+        currentToken = data.token;
+      }
+      if (data.user) {
+        localStorage.setItem('goddy_user', JSON.stringify(data.user));
+        currentUser = data.user;
+      }
+      const modalEl = document.getElementById('modalLogin');
+      if (modalEl) {
+        const modalInstance = bootstrap.Modal.getInstance(modalEl);
+        if (modalInstance) modalInstance.hide();
+      }
+      alert('Đăng nhập thành công với vai trò: ' + ((data.user.role || '').toUpperCase()));
+      if (data.user.role === 'client') {
+        switchUserRole('client', data.user.clientId || 1);
+      } else {
+        switchUserRole(data.user.role);
+      }
+    } else {
+      alert(data.message || 'Đăng nhập thất bại!');
+    }
+  } catch (err) {
+    alert('Lỗi kết nối máy chủ!');
+  }
+}
