@@ -54,10 +54,21 @@ function switchTab(tabKey) {
       return;
     }
   }
-  
+
     // Nếu đang ở trang chứa đầy đủ các section (index.html), ẩn/hiện theo phong cách SPA
   const sections = ['dashboard', 'clients', 'recruitment', 'invoices', 'debt', 'audit', 'client-portal'];
   sections.forEach(s => {
     const el = document.getElementById('section-' + s);
     if (el) el.style.display = (s === tabKey) ? 'block' : 'none';
   });
+
+    // Cập nhật trạng thái active cho sidebar
+  document.querySelectorAll('#sidebarMenuInternal .sidebar-item').forEach(item => item.classList.remove('active'));
+  const activeItem = Array.from(document.querySelectorAll('#sidebarMenuInternal .sidebar-item')).find(el => el.getAttribute('onclick')?.includes(tabKey));
+  if (activeItem) activeItem.classList.add('active');
+
+  // Cập nhật tiêu đề trang
+  const headerEl = document.getElementById('pageHeaderTitle');
+  if (headerEl) {
+    headerEl.textContent = TAB_TITLES[tabKey] || 'GODDY RECRUIT';
+  }
