@@ -72,4 +72,21 @@ exports.createInvoiceFromPlacement = async (req, res) => {
         if (!placement) {
             return res.status(404).json({ success: false, message: 'Không tìm thấy thông tin deal tuyển dụng!' });
         }
+        // Kiểm tra xem deal này đã được xuất hóa đơn chưa
+        const existingInvoice = await Invoice.findOne({ where: { placementId, status: { [Op.ne]: 'Cancelled' } } });
+        if (existingInvoice) {
+            return res.status(400).json({
+                success: false,
+                message: `Deal tuyển dụng này đã được phát hành hóa đơn mã: ${existingInvoice.invoiceCode}!`
+            });
+        }
+
+        const currentYear = new Date().getFullYear();
+        const count = await Invoice.count();
+        const invoiceCode = `INV-${currentYear}-${String(count + 1).padStart(4, '0')}`;
+
+        const subtotal = parseFloat(placement.serviceFee);
+        const vat = parseFloat(vatRate) !== undefined ? parseFloat(vatRate) : 8.0;
+        const vatAmount = subtotal * (vat / 100);
+        const totalAmount = subtotal + vatAmount;
 
