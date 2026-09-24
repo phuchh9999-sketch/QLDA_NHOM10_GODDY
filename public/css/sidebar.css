@@ -1,134 +1,377 @@
-/* =========================================
-   FE-05: SIDEBAR
-   NGUYEN_HOANG_PHUOC
-   ========================================= */
+/* =========================================================
+   GODDY ERP - SIDEBAR
+   FE-05: NGUYEN_HOANG_PHUOC
+   ========================================================= */
+
+/* =========================================================
+   SIDEBAR CONTAINER
+   ========================================================= */
 
 .sidebar {
-    width: 250px;
-    min-height: 100vh;
-    background: #ffffff;
-    border-right: 1px solid #e5e7eb;
-    padding: 20px 14px;
     position: fixed;
     top: 0;
     left: 0;
-    z-index: 1000;
+    width: var(--sidebar-width);
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: linear-gradient( 180deg, #0f172a 0%, #172554 100% );
+    color: var(--color-text-white);
+    border-right: 1px solid rgba(255, 255, 255, 0.06);
+    box-shadow: 4px 0 20px rgba(15, 23, 42, 0.12);
+    z-index: var(--z-sidebar);
+    overflow: hidden;
+    transition: width var(--transition-normal), transform var(--transition-normal);
 }
 
-/* Logo / tên hệ thống */
-.sidebar-logo {
+/* =========================================================
+   BRAND
+   ========================================================= */
+
+.sidebar-brand {
+    height: var(--topbar-height);
     display: flex;
     align-items: center;
-    gap: 10px;
-    padding: 8px 12px 24px;
-    border-bottom: 1px solid #e5e7eb;
-    margin-bottom: 18px;
+    padding: 0 var(--spacing-5);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    flex-shrink: 0;
 }
 
-.sidebar-logo-icon {
+.sidebar-brand-logo {
     width: 38px;
     height: 38px;
-    border-radius: 8px;
-    background: #2563eb;
-    color: #ffffff;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-weight: 700;
+    flex-shrink: 0;
+    background: linear-gradient( 135deg, #3b82f6, #2563eb );
+    border-radius: var(--radius-lg);
+    color: var(--color-white);
+    font-size: 18px;
+    font-weight: var(--font-weight-bold);
+    box-shadow: 0 6px 16px rgba(37, 99, 235, 0.35);
 }
 
-.sidebar-logo-text {
-    font-size: 16px;
-    font-weight: 700;
-    color: #111827;
+.sidebar-brand-info {
+    min-width: 0;
+    margin-left: var(--spacing-3);
 }
 
-/* Menu */
+.sidebar-brand-name {
+    margin: 0;
+    color: var(--color-white);
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-bold);
+    line-height: var(--line-height-tight);
+    letter-spacing: -0.3px;
+}
+
+.sidebar-brand-subtitle {
+    margin-top: 3px;
+    color: #94a3b8;
+    font-size: var(--font-size-xs);
+    white-space: nowrap;
+}
+
+/* =========================================================
+   NAVIGATION
+   ========================================================= */
+
+.sidebar-nav {
+    flex: 1;
+    padding: var(--spacing-4) var(--spacing-3);
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+    /* Scrollbar */
+
+    .sidebar-nav::-webkit-scrollbar {
+        width: 5px;
+    }
+
+    .sidebar-nav::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    .sidebar-nav::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.12);
+        border-radius: var(--radius-full);
+    }
+
+/* =========================================================
+   NAV GROUP
+   ========================================================= */
+
+.sidebar-section {
+    margin-bottom: var(--spacing-5);
+}
+
+.sidebar-section-title {
+    padding: 0 var(--spacing-3);
+    margin-bottom: var(--spacing-2);
+    color: #64748b;
+    font-size: 11px;
+    font-weight: var(--font-weight-semibold);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+}
+
+/* =========================================================
+   NAV ITEM
+   ========================================================= */
+
 .sidebar-menu {
     list-style: none;
     margin: 0;
     padding: 0;
 }
 
-.sidebar-item {
-    margin-bottom: 5px;
+.sidebar-menu-item {
+    margin-bottom: 4px;
 }
 
-.sidebar-link {
+.sidebar-menu-link {
+    position: relative;
+    min-height: 44px;
     display: flex;
     align-items: center;
-    gap: 10px;
-    padding: 11px 12px;
-    border-radius: 8px;
-    color: #4b5563;
+    padding: 0 var(--spacing-3);
+    color: #cbd5e1;
     text-decoration: none;
-    font-size: 14px;
-    transition: background 0.2s ease, color 0.2s ease;
+    border-radius: var(--radius-md);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    transition: background var(--transition-fast), color var(--transition-fast), transform var(--transition-fast);
 }
 
-    .sidebar-link:hover {
-        background: #f3f4f6;
-        color: #111827;
+    .sidebar-menu-link:hover {
+        background: rgba(255, 255, 255, 0.07);
+        color: var(--color-white);
+        transform: translateX(2px);
     }
 
-    .sidebar-link.active {
-        background: #eff6ff;
-        color: #2563eb;
-        font-weight: 600;
+    .sidebar-menu-link.active {
+        background: linear-gradient( 90deg, rgba(37, 99, 235, 0.95), rgba(59, 130, 246, 0.85) );
+        color: var(--color-white);
+        box-shadow: 0 6px 16px rgba(37, 99, 235, 0.25);
     }
 
-.sidebar-icon {
+        /* Active indicator */
+
+        .sidebar-menu-link.active::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 8px;
+            bottom: 8px;
+            width: 3px;
+            background: var(--color-white);
+            border-radius: 0 var(--radius-full) var(--radius-full) 0;
+        }
+
+/* =========================================================
+   MENU ICON
+   ========================================================= */
+
+.sidebar-menu-icon {
     width: 22px;
-    text-align: center;
+    height: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 17px;
+    opacity: 0.9;
+}
+
+.sidebar-menu-link.active .sidebar-menu-icon {
+    opacity: 1;
+}
+
+/* =========================================================
+   MENU TEXT
+   ========================================================= */
+
+.sidebar-menu-text {
+    margin-left: var(--spacing-3);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* =========================================================
+   BADGE
+   ========================================================= */
+
+.sidebar-menu-badge {
+    min-width: 20px;
+    height: 20px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: auto;
+    padding: 0 6px;
+    background: rgba(255, 255, 255, 0.1);
+    color: #cbd5e1;
+    border-radius: var(--radius-full);
+    font-size: 11px;
+    font-weight: var(--font-weight-semibold);
+}
+
+.sidebar-menu-link.active .sidebar-menu-badge {
+    background: rgba(255, 255, 255, 0.18);
+    color: var(--color-white);
+}
+
+/* =========================================================
+   SUB MENU
+   ========================================================= */
+
+.sidebar-submenu {
+    list-style: none;
+    margin: 4px 0 6px 0;
+    padding: 0 0 0 38px;
+}
+
+.sidebar-submenu-link {
+    display: block;
+    padding: 8px 12px;
+    color: #94a3b8;
+    text-decoration: none;
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-sm);
+    transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+    .sidebar-submenu-link:hover {
+        background: rgba(255, 255, 255, 0.05);
+        color: var(--color-white);
+    }
+
+    .sidebar-submenu-link.active {
+        color: #93c5fd;
+        font-weight: var(--font-weight-semibold);
+    }
+
+/* =========================================================
+   SIDEBAR FOOTER
+   ========================================================= */
+
+.sidebar-footer {
+    padding: var(--spacing-3);
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
     flex-shrink: 0;
 }
 
-/* Nhóm menu */
-.sidebar-section {
-    margin: 20px 12px 8px;
-    color: #9ca3af;
+.sidebar-user {
+    display: flex;
+    align-items: center;
+    padding: var(--spacing-2);
+    border-radius: var(--radius-md);
+    transition: background var(--transition-fast);
+}
+
+    .sidebar-user:hover {
+        background: rgba(255, 255, 255, 0.06);
+    }
+
+.sidebar-user-avatar {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    background: linear-gradient( 135deg, #3b82f6, #1d4ed8 );
+    color: var(--color-white);
+    border-radius: var(--radius-full);
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-bold);
+}
+
+.sidebar-user-info {
+    min-width: 0;
+    margin-left: var(--spacing-3);
+}
+
+.sidebar-user-name {
+    color: var(--color-white);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-semibold);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.sidebar-user-role {
+    margin-top: 2px;
+    color: #94a3b8;
     font-size: 11px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
+    white-space: nowrap;
 }
 
-/* Nội dung chính */
-.main-content {
-    margin-left: 250px;
-    min-height: 100vh;
-    padding: 24px;
+/* =========================================================
+   COLLAPSED SIDEBAR
+   ========================================================= */
+
+.sidebar.is-collapsed {
+    width: var(--sidebar-width-collapsed);
 }
 
-/* Responsive */
-@media (max-width: 768px) {
-    .sidebar {
-        width: 220px;
-    }
-
-    .main-content {
-        margin-left: 220px;
-    }
-}
-
-@media (max-width: 576px) {
-    .sidebar {
-        width: 70px;
-        padding: 15px 8px;
-    }
-
-    .sidebar-logo-text,
-    .sidebar-link span:not(.sidebar-icon),
-    .sidebar-section {
+    .sidebar.is-collapsed .sidebar-brand-info,
+    .sidebar.is-collapsed .sidebar-section-title,
+    .sidebar.is-collapsed .sidebar-menu-text,
+    .sidebar.is-collapsed .sidebar-menu-badge,
+    .sidebar.is-collapsed .sidebar-user-info {
         display: none;
     }
 
-    .sidebar-link {
+    .sidebar.is-collapsed .sidebar-brand {
         justify-content: center;
+        padding: 0;
     }
 
-    .main-content {
-        margin-left: 70px;
-        padding: 16px;
+    .sidebar.is-collapsed .sidebar-menu-link {
+        justify-content: center;
+        padding: 0;
+    }
+
+    .sidebar.is-collapsed .sidebar-menu-icon {
+        margin: 0;
+    }
+
+    .sidebar.is-collapsed .sidebar-user {
+        justify-content: center;
+        padding: var(--spacing-2);
+    }
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+.sidebar-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.45);
+    backdrop-filter: blur(2px);
+    z-index: calc(var(--z-sidebar) - 1);
+}
+
+@media (max-width: 768px) {
+
+    .sidebar {
+        width: var(--sidebar-width);
+        transform: translateX(-100%);
+        box-shadow: 8px 0 30px rgba(15, 23, 42, 0.18);
+    }
+
+        .sidebar.is-open {
+            transform: translateX(0);
+        }
+
+    .sidebar-overlay.is-open {
+        display: block;
     }
 }

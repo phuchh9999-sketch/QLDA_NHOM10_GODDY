@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>GODDY ERP - Form Demo</title>
+
+
+    <link
+        rel="stylesheet"
+        href="css/variables.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="css/style.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="css/form-controls.css"
+    >
+
+</head>
+
+
+<body
+    style="
+        min-height: 100vh;
+        background: var(--color-background);
+    "
+>
+
+
+    <main
+        style="
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 48px 24px;
+        "
+    >
+
+        <div class="form-card">
+
+
+            <!-- HEADER -->
+
+            <div class="form-card-header">
+
+                <h1 class="form-card-title">
+                    Thêm đối tác
+                </h1>
+
+                <p class="form-card-subtitle">
+                    Nhập thông tin đối tác vào hệ thống.
+                </p>
+
+            </div>
+
+
+            <!-- FORM -->
+
+            <form
+                id="partnerForm"
+                class="form-card-body"
+                novalidate
+            >
+
+
+                <!-- ROW 1 -->
+
+                <div class="form-row">
+
+
+                    <!-- NAME -->
+
+                    <div class="form-group">
+
+                        <label
+                            class="form-label"
+                            for="partnerName"
+                        >
+
+                            Tên đối tác
+
+                            <span
+                                class="form-label-required"
+                            >
+                                *
+                            </span>
+
+                        </label>
+
+                        <input
+                            type="text"
+                            id="partnerName"
+                            class="form-input"
+                            placeholder="Nhập tên đối tác"
+                            required
+                        >
+
+                        <p class="form-help">
+                            Tên đầy đủ của khách hàng hoặc nhà cung cấp.
+                        </p>
+
+                    </div>
+
+
+                    <!-- PHONE -->
+
+                    <div class="form-group">
+
+                        <label
+                            class="form-label"
+                            for="partnerPhone"
+                        >
+                            Số điện thoại
+                        </label>
+
+                        <input
+                            type="tel"
+                            id="partnerPhone"
+                            class="form-input"
+                            placeholder="0901 234 567"
+                        >
+
+                    </div>
+
+                </div>
+
+
+                <!-- EMAIL -->
+
+                <div class="form-group">
+
+                    <label
+                        class="form-label"
+                        for="partnerEmail"
+                    >
+                        Email
+                    </label>
+
+                    <div class="form-input-wrapper">
+
+                        <span class="form-input-icon">
+                            @
+                        </span>
+
+                        <input
+                            type="email"
+                            id="partnerEmail"
+                            class="form-input"
+                            placeholder="example@email.com"
+                        >
+
+                    </div>
+
+                </div>
+
+
+                <!-- TYPE -->
+
+                <div class="form-group">
+
+                    <label
+                        class="form-label"
+                        for="partnerType"
+                    >
+
+                        Loại đối tác
+
+                        <span
+                            class="form-label-required"
+                        >
+                            *
+                        </span>
+
+                    </label>
+
+                    <select
+                        id="partnerType"
+                        class="form-select"
+                        required
+                    >
+
+                        <option value="">
+                            -- Chọn loại đối tác --
+                        </option>
+
+                        <option value="customer">
+                            Khách hàng
+                        </option>
+
+                        <option value="supplier">
+                            Nhà cung cấp
+                        </option>
+
+                        <option value="both">
+                            Khách hàng & Nhà cung cấp
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <!-- ADDRESS -->
+
+                <div class="form-group">
+
+                    <label
+                        class="form-label"
+                        for="partnerAddress"
+                    >
+                        Địa chỉ
+                    </label>
+
+                    <textarea
+                        id="partnerAddress"
+                        class="form-textarea"
+                        placeholder="Nhập địa chỉ..."
+                    ></textarea>
+
+                </div>
+
+
+                <!-- STATUS -->
+
+                <div class="form-group">
+
+                    <span class="form-label">
+                        Trạng thái
+                    </span>
+
+                    <div class="form-check-group">
+
+                        <label class="form-check">
+
+                            <input
+                                type="radio"
+                                name="status"
+                                value="active"
+                                checked
+                            >
+
+                            <span class="form-check-label">
+                                Đang hoạt động
+                            </span>
+
+                        </label>
+
+
+                        <label class="form-check">
+
+                            <input
+                                type="radio"
+                                name="status"
+                                value="inactive"
+                            >
+
+                            <span class="form-check-label">
+                                Ngừng hoạt động
+                            </span>
+
+                        </label>
+
+                    </div>
+
+                </div>
+
+
+                <!-- CHECKBOX -->
+
+                <div class="form-group">
+
+                    <label class="form-check">
+
+                        <input
+                            type="checkbox"
+                            id="allowContact"
+                        >
+
+                        <span class="form-check-label">
+                            Cho phép liên hệ với đối tác
+                        </span>
+
+                    </label>
+
+                </div>
+
+
+                <!-- ACTIONS -->
+
+                <div class="form-actions">
+
+                    <button
+                        type="button"
+                        class="btn btn-secondary"
+                        id="cancelButton"
+                    >
+                        Hủy
+                    </button>
+
+                    <button
+                        type="submit"
+                        class="btn btn-primary"
+                        id="saveButton"
+                    >
+                        Lưu đối tác
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </main>
+
+
+    <!-- =====================================================
+         COMMON JS
+         ===================================================== -->
+
+    <script src="js/common.js"></script>
+
+
+    <!-- =====================================================
+         DEMO SCRIPT
+         ===================================================== -->
+
+    <script>
+
+        const partnerForm =
+            document.getElementById(
+                "partnerForm"
+            );
+
+        const saveButton =
+            document.getElementById(
+                "saveButton"
+            );
+
+        const cancelButton =
+            document.getElementById(
+                "cancelButton"
+            );
+
+
+        /*
+         * Kiểm tra phần tử.
+         */
+
+        if (
+            partnerForm === null ||
+            saveButton === null ||
+            cancelButton === null
+        ) {
+
+            throw new Error(
+                "Không tìm thấy thành phần Form."
+            );
+
+        }
+
+
+        /*
+         * SUBMIT FORM
+         */
+
+        partnerForm.addEventListener(
+            "submit",
+            async function (event) {
+
+                event.preventDefault();
+
+
+                clearFormErrors(
+                    partnerForm
+                );
+
+
+                /*
+                 * Validate.
+                 */
+
+                const isValid =
+                    validateRequiredFields(
+                        partnerForm
+                    );
+
+
+                if (!isValid) {
+
+                    showMessage(
+                        "Vui lòng kiểm tra các trường bắt buộc.",
+                        "warning"
+                    );
+
+                    return;
+
+                }
+
+
+                /*
+                 * Loading.
+                 */
+
+                setButtonLoading(
+                    saveButton,
+                    true
+                );
+
+
+                /*
+                 * Demo delay.
+                 */
+
+                await new Promise(
+                    function (resolve) {
+
+                        setTimeout(
+                            resolve,
+                            1000
+                        );
+
+                    }
+                );
+
+
+                /*
+                 * Lấy dữ liệu form.
+                 */
+
+                const formData =
+                    new FormData(
+                        partnerForm
+                    );
+
+
+                console.log(
+                    "Dữ liệu đối tác:",
+                    Object.fromEntries(
+                        formData.entries()
+                    )
+                );
+
+
+                showMessage(
+                    "Lưu đối tác thành công!",
+                    "success"
+                );
+
+
+                setButtonLoading(
+                    saveButton,
+                    false
+                );
+
+            }
+        );
+
+
+        /*
+         * CANCEL
+         */
+
+        cancelButton.addEventListener(
+            "click",
+            function () {
+
+                partnerForm.reset();
+
+                clearFormErrors(
+                    partnerForm
+                );
+
+            }
+        );
+
+    </script>
+
+</body>
+
+</html>

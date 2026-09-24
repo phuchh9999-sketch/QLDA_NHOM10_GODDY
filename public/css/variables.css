@@ -1,84 +1,156 @@
 /* =========================================================
-   QLDA_NHOM10_GODDY
-   Frontend - NGUYEN_HOANG_PHUOC
-   FE-04: He thong bien giao dien
+   GODDY ERP - DESIGN SYSTEM
+   FE-04: NGUYEN_HOANG_PHUOC
    ========================================================= */
 
 :root {
-    /* =========================
-       MÀU CHỦ ĐẠO
-       ========================= */
+    /* =====================================================
+       1. BRAND COLORS
+       ===================================================== */
 
-    --primary-color: #0d47a1;
-    --primary-dark: #08306b;
-    --primary-light: #e3f2fd;
-    --secondary-color: #1976d2;
-    /* =========================
-       MÀU TRẠNG THÁI
-       ========================= */
+    --color-primary: #2563eb;
+    --color-primary-hover: #1d4ed8;
+    --color-primary-light: #eff6ff;
+    --color-primary-soft: #dbeafe;
+    --color-secondary: #64748b;
+    --color-secondary-hover: #475569;
+    --color-secondary-light: #f1f5f9;
+    /* =====================================================
+       2. STATUS COLORS
+       ===================================================== */
 
-    --success-color: #2e7d32;
-    --warning-color: #f9a825;
-    --danger-color: #c62828;
-    --info-color: #0288d1;
-    /* =========================
-       MÀU NỀN VÀ CHỮ
-       ========================= */
+    --color-success: #16a34a;
+    --color-success-hover: #15803d;
+    --color-success-light: #f0fdf4;
+    --color-success-soft: #dcfce7;
+    --color-warning: #d97706;
+    --color-warning-hover: #b45309;
+    --color-warning-light: #fffbeb;
+    --color-warning-soft: #fef3c7;
+    --color-danger: #dc2626;
+    --color-danger-hover: #b91c1c;
+    --color-danger-light: #fef2f2;
+    --color-danger-soft: #fee2e2;
+    --color-info: #0891b2;
+    --color-info-hover: #0e7490;
+    --color-info-light: #ecfeff;
+    --color-info-soft: #cffafe;
+    /* =====================================================
+       3. NEUTRAL COLORS
+       ===================================================== */
 
-    --white-color: #ffffff;
-    --black-color: #212121;
-    --text-color: #333333;
-    --text-secondary-color: #666666;
-    --background-color: #f5f7fa;
-    --border-color: #dcdfe3;
-    /* =========================
-       FONT
-       ========================= */
+    --color-white: #ffffff;
+    --color-gray-50: #f8fafc;
+    --color-gray-100: #f1f5f9;
+    --color-gray-200: #e2e8f0;
+    --color-gray-300: #cbd5e1;
+    --color-gray-400: #94a3b8;
+    --color-gray-500: #64748b;
+    --color-gray-600: #475569;
+    --color-gray-700: #334155;
+    --color-gray-800: #1e293b;
+    --color-gray-900: #0f172a;
+    /* =====================================================
+       4. BACKGROUND
+       ===================================================== */
 
-    --font-family: Arial, Helvetica, sans-serif;
+    --color-background: #f8fafc;
+    --color-surface: #ffffff;
+    --color-surface-hover: #f8fafc;
+    /* =====================================================
+       5. TEXT
+       ===================================================== */
+
+    --color-text-primary: #0f172a;
+    --color-text-secondary: #475569;
+    --color-text-muted: #64748b;
+    --color-text-light: #94a3b8;
+    --color-text-white: #ffffff;
+    /* =====================================================
+       6. BORDER
+       ===================================================== */
+
+    --color-border: #e2e8f0;
+    --color-border-light: #f1f5f9;
+    --color-border-focus: #2563eb;
+    /* =====================================================
+       7. TYPOGRAPHY
+       ===================================================== */
+
+    --font-family: "Segoe UI", Arial, Helvetica, sans-serif;
     --font-size-xs: 12px;
     --font-size-sm: 14px;
     --font-size-md: 16px;
-    --font-size-lg: 20px;
-    --font-size-xl: 24px;
-    --font-size-xxl: 32px;
-    /* =========================
-       KHOẢNG CÁCH
-       ========================= */
+    --font-size-lg: 18px;
+    --font-size-xl: 20px;
+    --font-size-2xl: 24px;
+    --font-size-3xl: 30px;
+    --font-weight-normal: 400;
+    --font-weight-medium: 500;
+    --font-weight-semibold: 600;
+    --font-weight-bold: 700;
+    --line-height-tight: 1.25;
+    --line-height-normal: 1.5;
+    --line-height-relaxed: 1.7;
+    /* =====================================================
+       8. SPACING
+       ===================================================== */
 
-    --spacing-xs: 4px;
-    --spacing-sm: 8px;
-    --spacing-md: 16px;
-    --spacing-lg: 24px;
-    --spacing-xl: 32px;
-    --spacing-xxl: 48px;
-    /* =========================
-       BO GÓC
-       ========================= */
+    --spacing-1: 4px;
+    --spacing-2: 8px;
+    --spacing-3: 12px;
+    --spacing-4: 16px;
+    --spacing-5: 20px;
+    --spacing-6: 24px;
+    --spacing-8: 32px;
+    --spacing-10: 40px;
+    --spacing-12: 48px;
+    /* =====================================================
+       9. BORDER RADIUS
+       ===================================================== */
 
-    --radius-sm: 4px;
+    --radius-sm: 6px;
     --radius-md: 8px;
     --radius-lg: 12px;
-    --radius-round: 999px;
-    /* =========================
-       ĐỔ BÓNG
-       ========================= */
+    --radius-xl: 16px;
+    --radius-2xl: 20px;
+    --radius-full: 9999px;
+    /* =====================================================
+       10. SHADOW
+       ===================================================== */
 
-    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
-    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.10);
-    --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
-    /* =========================
-       KÍCH THƯỚC
-       ========================= */
+    --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.05);
+    --shadow-md: 0 4px 12px rgba(15, 23, 42, 0.08);
+    --shadow-lg: 0 10px 30px rgba(15, 23, 42, 0.10);
+    --shadow-xl: 0 20px 50px rgba(15, 23, 42, 0.15);
+    /* =====================================================
+       11. LAYOUT
+       ===================================================== */
 
-    --sidebar-width: 240px;
-    --header-height: 64px;
-    --content-max-width: 1400px;
-    /* =========================
-       TRANSITION
-       ========================= */
+    --sidebar-width: 250px;
+    --sidebar-width-collapsed: 72px;
+    --topbar-height: 72px;
+    --content-max-width: 1600px;
+    /* =====================================================
+       12. Z-INDEX
+       ===================================================== */
 
-    --transition-fast: 0.15s ease;
-    --transition-normal: 0.2s ease;
-    --transition-slow: 0.3s ease;
+    --z-sidebar: 1000;
+    --z-topbar: 1100;
+    --z-dropdown: 1200;
+    --z-overlay: 1300;
+    --z-modal: 1400;
+    --z-toast: 1500;
+    /* =====================================================
+       13. TRANSITION
+       ===================================================== */
+
+    --transition-fast: 150ms ease;
+    --transition-normal: 200ms ease;
+    --transition-slow: 300ms ease;
+    /* =====================================================
+       14. FOCUS
+       ===================================================== */
+
+    --focus-ring: 0 0 0 3px rgba(37, 99, 235, 0.15);
 }

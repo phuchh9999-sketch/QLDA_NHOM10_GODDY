@@ -1,234 +1,412 @@
-/* =========================================
-   FE-07: FORM CONTROLS
-   NGUYEN_HOANG_PHUOC
-   ========================================= */
+/* =========================================================
+   GODDY ERP - FORM CONTROLS
+   FE-07: NGUYEN_HOANG_PHUOC
+   ========================================================= */
 
-/* ===== BUTTON ===== */
 
-.btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    min-height: 38px;
-    padding: 8px 16px;
-    border: 1px solid transparent;
-    border-radius: 8px;
-    font-family: inherit;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    text-decoration: none;
-    transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
-}
-
-    .btn:disabled {
-        opacity: 0.6;
-        cursor: not-allowed;
-    }
-
-/* Primary */
-.btn-primary {
-    background: #2563eb;
-    color: #ffffff;
-}
-
-    .btn-primary:hover {
-        background: #1d4ed8;
-    }
-
-/* Secondary */
-.btn-secondary {
-    background: #ffffff;
-    color: #374151;
-    border-color: #d1d5db;
-}
-
-    .btn-secondary:hover {
-        background: #f3f4f6;
-    }
-
-/* Success */
-.btn-success {
-    background: #16a34a;
-    color: #ffffff;
-}
-
-    .btn-success:hover {
-        background: #15803d;
-    }
-
-/* Danger */
-.btn-danger {
-    background: #dc2626;
-    color: #ffffff;
-}
-
-    .btn-danger:hover {
-        background: #b91c1c;
-    }
-
-/* Warning */
-.btn-warning {
-    background: #f59e0b;
-    color: #ffffff;
-}
-
-    .btn-warning:hover {
-        background: #d97706;
-    }
-
-/* ===== FORM GROUP ===== */
+/* =========================================================
+   FORM GROUP
+   ========================================================= */
 
 .form-group {
-    margin-bottom: 18px;
-}
-
-.form-label {
-    display: block;
-    margin-bottom: 7px;
-    color: #374151;
-    font-size: 14px;
-    font-weight: 600;
-}
-
-.form-required {
-    color: #dc2626;
-    margin-left: 3px;
-}
-
-/* ===== INPUT / SELECT / TEXTAREA ===== */
-
-.form-control,
-.form-select,
-.form-textarea {
-    width: 100%;
-    box-sizing: border-box;
-    padding: 10px 12px;
-    border: 1px solid #d1d5db;
-    border-radius: 8px;
-    background: #ffffff;
-    color: #111827;
-    font-family: inherit;
-    font-size: 14px;
-    outline: none;
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
-}
-
-.form-control,
-.form-select {
-    height: 40px;
-}
-
-.form-textarea {
-    min-height: 100px;
-    resize: vertical;
-}
-
-    .form-control::placeholder,
-    .form-textarea::placeholder {
-        color: #9ca3af;
-    }
-
-    .form-control:focus,
-    .form-select:focus,
-    .form-textarea:focus {
-        border-color: #2563eb;
-        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
-    }
-
-    .form-control:disabled,
-    .form-select:disabled,
-    .form-textarea:disabled {
-        background: #f3f4f6;
-        color: #6b7280;
-        cursor: not-allowed;
-    }
-
-/* ===== CHECKBOX / RADIO ===== */
-
-.form-check {
     display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-bottom: 10px;
+    flex-direction: column;
+    gap: var(--spacing-2);
+    margin-bottom: var(--spacing-5);
 }
 
-    .form-check input {
-        width: 16px;
-        height: 16px;
-        margin: 0;
-        accent-color: #2563eb;
-    }
 
-    .form-check label {
-        color: #374151;
-        font-size: 14px;
-        cursor: pointer;
-    }
-
-/* ===== HELP TEXT / ERROR ===== */
-
-.form-help {
-    display: block;
-    margin-top: 5px;
-    color: #6b7280;
-    font-size: 12px;
-}
-
-.form-error {
-    display: block;
-    margin-top: 5px;
-    color: #dc2626;
-    font-size: 12px;
-}
-
-/* ===== INVALID ===== */
-
-.form-control.is-invalid,
-.form-select.is-invalid,
-.form-textarea.is-invalid {
-    border-color: #dc2626;
-}
-
-    .form-control.is-invalid:focus,
-    .form-select.is-invalid:focus,
-    .form-textarea.is-invalid:focus {
-        box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.12);
-    }
-
-/* ===== FORM ROW ===== */
+/* =========================================================
+   FORM ROW
+   ========================================================= */
 
 .form-row {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 16px;
+    gap: var(--spacing-5);
 }
 
-/* ===== FORM ACTIONS ===== */
+
+/* =========================================================
+   LABEL
+   ========================================================= */
+
+.form-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--color-text-primary);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-semibold);
+    line-height: var(--line-height-normal);
+}
+
+.form-label-required {
+    color: var(--color-danger);
+}
+
+
+/* =========================================================
+   HELP TEXT
+   ========================================================= */
+
+.form-help {
+    margin: 0;
+    color: var(--color-text-muted);
+    font-size: var(--font-size-xs);
+    line-height: var(--line-height-normal);
+}
+
+
+/* =========================================================
+   INPUT / SELECT / TEXTAREA
+   ========================================================= */
+
+.form-input,
+.form-select,
+.form-textarea {
+    width: 100%;
+    box-sizing: border-box;
+    border: 1px solid var(--color-border);
+    background: var(--color-white);
+    color: var(--color-text-primary);
+    border-radius: var(--radius-md);
+    outline: none;
+    font-family: var(--font-family);
+    font-size: var(--font-size-sm);
+    transition: border-color var(--transition-fast), box-shadow var(--transition-fast), background var(--transition-fast);
+}
+
+
+/* INPUT */
+
+.form-input {
+    height: 44px;
+    padding: 0 var(--spacing-4);
+}
+
+
+/* SELECT */
+
+.form-select {
+    height: 44px;
+    padding: 0 var(--spacing-4);
+    cursor: pointer;
+}
+
+
+/* TEXTAREA */
+
+.form-textarea {
+    min-height: 120px;
+    padding: var(--spacing-3) var(--spacing-4);
+    resize: vertical;
+    line-height: var(--line-height-relaxed);
+}
+
+
+    /* =========================================================
+   PLACEHOLDER
+   ========================================================= */
+
+    .form-input::placeholder,
+    .form-textarea::placeholder {
+        color: var(--color-text-light);
+    }
+
+
+    /* =========================================================
+   HOVER
+   ========================================================= */
+
+    .form-input:hover,
+    .form-select:hover,
+    .form-textarea:hover {
+        border-color: var(--color-gray-300);
+    }
+
+
+    /* =========================================================
+   FOCUS
+   ========================================================= */
+
+    .form-input:focus,
+    .form-select:focus,
+    .form-textarea:focus {
+        border-color: var(--color-border-focus);
+        box-shadow: var(--focus-ring);
+        background: var(--color-white);
+    }
+
+
+    /* =========================================================
+   DISABLED
+   ========================================================= */
+
+    .form-input:disabled,
+    .form-select:disabled,
+    .form-textarea:disabled {
+        background: var(--color-gray-100);
+        color: var(--color-text-light);
+        cursor: not-allowed;
+        opacity: 0.8;
+    }
+
+
+    /* =========================================================
+   ERROR
+   ========================================================= */
+
+    .form-input.is-error,
+    .form-select.is-error,
+    .form-textarea.is-error {
+        border-color: var(--color-danger);
+        background: var(--color-danger-light);
+    }
+
+        .form-input.is-error:focus,
+        .form-select.is-error:focus,
+        .form-textarea.is-error:focus {
+            border-color: var(--color-danger);
+            box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.12);
+        }
+
+.form-error {
+    display: none;
+    margin: 0;
+    color: var(--color-danger);
+    font-size: var(--font-size-xs);
+    line-height: var(--line-height-normal);
+}
+
+    .form-error.is-visible {
+        display: block;
+    }
+
+
+/* =========================================================
+   SUCCESS
+   ========================================================= */
+
+.form-input.is-success,
+.form-select.is-success,
+.form-textarea.is-success {
+    border-color: var(--color-success);
+}
+
+.form-success {
+    display: none;
+    margin: 0;
+    color: var(--color-success);
+    font-size: var(--font-size-xs);
+}
+
+    .form-success.is-visible {
+        display: block;
+    }
+
+
+/* =========================================================
+   INPUT WITH ICON
+   ========================================================= */
+
+.form-input-wrapper {
+    position: relative;
+}
+
+    .form-input-wrapper .form-input {
+        padding-left: 42px;
+    }
+
+.form-input-icon {
+    position: absolute;
+    top: 50%;
+    left: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-text-muted);
+    font-size: 16px;
+    transform: translateY(-50%);
+    pointer-events: none;
+}
+
+
+/* =========================================================
+   PASSWORD TOGGLE
+   ========================================================= */
+
+.form-password-wrapper {
+    position: relative;
+}
+
+    .form-password-wrapper .form-input {
+        padding-right: 46px;
+    }
+
+.form-password-toggle {
+    position: absolute;
+    top: 50%;
+    right: 8px;
+    width: 34px;
+    height: 34px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 0;
+    background: transparent;
+    color: var(--color-text-muted);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transform: translateY(-50%);
+    transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+    .form-password-toggle:hover {
+        background: var(--color-gray-100);
+        color: var(--color-primary);
+    }
+
+
+/* =========================================================
+   CHECKBOX / RADIO
+   ========================================================= */
+
+.form-check {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-2);
+    color: var(--color-text-secondary);
+    font-size: var(--font-size-sm);
+    cursor: pointer;
+}
+
+    .form-check input {
+        width: 17px;
+        height: 17px;
+        margin: 0;
+        accent-color: var(--color-primary);
+        cursor: pointer;
+    }
+
+.form-check-label {
+    user-select: none;
+}
+
+
+/* =========================================================
+   CHECK GROUP
+   ========================================================= */
+
+.form-check-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-4);
+}
+
+
+/* =========================================================
+   BUTTON
+   ========================================================= */
 
 .form-actions {
     display: flex;
     align-items: center;
     justify-content: flex-end;
-    gap: 10px;
-    margin-top: 24px;
-    padding-top: 18px;
-    border-top: 1px solid #e5e7eb;
+    gap: var(--spacing-3);
+    margin-top: var(--spacing-6);
+    padding-top: var(--spacing-5);
+    border-top: 1px solid var(--color-border-light);
 }
 
-/* ===== RESPONSIVE ===== */
+
+/* =========================================================
+   FORM CARD
+   ========================================================= */
+
+.form-card {
+    background: var(--color-white);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+}
+
+.form-card-header {
+    padding: var(--spacing-6);
+    border-bottom: 1px solid var(--color-border-light);
+}
+
+.form-card-title {
+    margin: 0;
+    color: var(--color-text-primary);
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-bold);
+}
+
+.form-card-subtitle {
+    margin: var(--spacing-2) 0 0;
+    color: var(--color-text-muted);
+    font-size: var(--font-size-sm);
+}
+
+.form-card-body {
+    padding: var(--spacing-6);
+}
+
+
+/* =========================================================
+   BUTTON LOADING
+   ========================================================= */
+
+.btn.is-loading {
+    position: relative;
+    color: transparent !important;
+    pointer-events: none;
+}
+
+    .btn.is-loading::after {
+        content: "";
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 16px;
+        height: 16px;
+        border: 2px solid rgba(255, 255, 255, 0.4);
+        border-top-color: var(--color-white);
+        border-radius: var(--radius-full);
+        animation: form-spinner 0.7s linear infinite;
+        transform: translate( -50%, -50% );
+    }
+
+@keyframes form-spinner {
+
+    from {
+        transform: translate(-50%, -50%) rotate(0deg);
+    }
+
+    to {
+        transform: translate(-50%, -50%) rotate(360deg);
+    }
+}
+
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
 
 @media (max-width: 768px) {
+
     .form-row {
         grid-template-columns: 1fr;
     }
 
     .form-actions {
-        flex-wrap: wrap;
+        flex-direction: column-reverse;
+        align-items: stretch;
     }
 
         .form-actions .btn {
-            flex: 1;
+            width: 100%;
         }
 }

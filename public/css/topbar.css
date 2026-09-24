@@ -1,146 +1,380 @@
-/* =========================================
-   FE-06: HEADER / TOPBAR
-   NGUYEN_HOANG_PHUOC
-   ========================================= */
+/* =========================================================
+   GODDY ERP - TOPBAR
+   FE-06: NGUYEN_HOANG_PHUOC
+   ========================================================= */
 
 .topbar {
-    height: 64px;
-    margin-left: 250px;
-    padding: 0 24px;
-    background: #ffffff;
-    border-bottom: 1px solid #e5e7eb;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    position: sticky;
+    position: fixed;
     top: 0;
-    z-index: 900;
-}
-
-/* Bên trái */
-.topbar-left {
+    right: 0;
+    left: var(--sidebar-width);
+    height: var(--topbar-height);
     display: flex;
     align-items: center;
-    gap: 16px;
+    padding: 0 var(--spacing-6);
+    background: rgba(255, 255, 255, 0.96);
+    border-bottom: 1px solid var(--color-border);
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+    backdrop-filter: blur(12px);
+    z-index: var(--z-topbar);
+    transition: left var(--transition-normal);
 }
 
-.topbar-title {
+
+/* =========================================================
+   LEFT
+   ========================================================= */
+
+.topbar-left {
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    flex: 1;
+}
+
+
+/* =========================================================
+   MOBILE MENU
+   ========================================================= */
+
+.topbar-menu-button {
+    width: 40px;
+    height: 40px;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    margin-right: var(--spacing-3);
+    border: 1px solid var(--color-border);
+    background: var(--color-white);
+    color: var(--color-text-secondary);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    font-size: 18px;
+    transition: background var(--transition-fast), color var(--transition-fast), border-color var(--transition-fast);
+}
+
+    .topbar-menu-button:hover {
+        background: var(--color-primary-light);
+        color: var(--color-primary);
+        border-color: var(--color-primary-soft);
+    }
+
+
+/* =========================================================
+   PAGE INFO
+   ========================================================= */
+
+.topbar-page-info {
+    min-width: 0;
+}
+
+.topbar-page-title {
     margin: 0;
-    font-size: 20px;
-    font-weight: 700;
-    color: #111827;
+    color: var(--color-text-primary);
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-bold);
+    line-height: var(--line-height-tight);
+    letter-spacing: -0.3px;
 }
 
-.topbar-subtitle {
-    margin: 0;
-    color: #6b7280;
-    font-size: 13px;
+.topbar-page-subtitle {
+    margin-top: 4px;
+    color: var(--color-text-muted);
+    font-size: var(--font-size-xs);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
-/* Bên phải */
+
+/* =========================================================
+   SEARCH
+   ========================================================= */
+
+.topbar-search {
+    position: relative;
+    width: 280px;
+    margin-left: var(--spacing-8);
+}
+
+.topbar-search-icon {
+    position: absolute;
+    top: 50%;
+    left: 13px;
+    color: var(--color-text-muted);
+    font-size: 16px;
+    transform: translateY(-50%);
+    pointer-events: none;
+}
+
+.topbar-search-input {
+    width: 100%;
+    height: 40px;
+    box-sizing: border-box;
+    padding: 0 var(--spacing-4) 0 38px;
+    border: 1px solid var(--color-border);
+    background: var(--color-gray-50);
+    color: var(--color-text-primary);
+    border-radius: var(--radius-md);
+    outline: none;
+    font-family: var(--font-family);
+    font-size: var(--font-size-sm);
+    transition: border-color var(--transition-fast), background var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+    .topbar-search-input::placeholder {
+        color: var(--color-text-light);
+    }
+
+    .topbar-search-input:hover {
+        background: var(--color-white);
+        border-color: var(--color-gray-300);
+    }
+
+    .topbar-search-input:focus {
+        background: var(--color-white);
+        border-color: var(--color-primary);
+        box-shadow: var(--focus-ring);
+    }
+
+
+/* =========================================================
+   RIGHT
+   ========================================================= */
+
 .topbar-right {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: var(--spacing-2);
+    margin-left: auto;
 }
 
-/* Ô tìm kiếm */
-.topbar-search {
-    width: 220px;
-    height: 38px;
-    padding: 0 12px;
-    border: 1px solid #d1d5db;
-    border-radius: 8px;
-    outline: none;
-    font-size: 14px;
-}
 
-    .topbar-search:focus {
-        border-color: #2563eb;
-    }
+/* =========================================================
+   ICON BUTTON
+   ========================================================= */
 
-/* Nút icon */
 .topbar-icon-button {
-    width: 38px;
-    height: 38px;
-    border: 1px solid #e5e7eb;
-    border-radius: 8px;
-    background: #ffffff;
+    position: relative;
+    width: 40px;
+    height: 40px;
     display: flex;
     align-items: center;
     justify-content: center;
+    border: 1px solid transparent;
+    background: transparent;
+    color: var(--color-text-secondary);
+    border-radius: var(--radius-md);
     cursor: pointer;
-    font-size: 17px;
+    font-size: 18px;
+    transition: background var(--transition-fast), color var(--transition-fast), border-color var(--transition-fast);
 }
 
     .topbar-icon-button:hover {
-        background: #f3f4f6;
+        background: var(--color-gray-100);
+        color: var(--color-primary);
+        border-color: var(--color-border);
     }
 
-/* Khu vực user */
-.topbar-user {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding-left: 12px;
-    border-left: 1px solid #e5e7eb;
-}
 
-.topbar-avatar {
-    width: 38px;
-    height: 38px;
-    border-radius: 50%;
-    background: #2563eb;
-    color: #ffffff;
+/* =========================================================
+   NOTIFICATION
+   ========================================================= */
+
+.topbar-notification-badge {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    min-width: 16px;
+    height: 16px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 13px;
-    font-weight: 700;
+    padding: 0 3px;
+    background: var(--color-danger);
+    color: var(--color-white);
+    border: 2px solid var(--color-white);
+    border-radius: var(--radius-full);
+    font-size: 9px;
+    font-weight: var(--font-weight-bold);
+    line-height: 1;
+}
+
+
+/* =========================================================
+   DIVIDER
+   ========================================================= */
+
+.topbar-divider {
+    width: 1px;
+    height: 32px;
+    margin: 0 var(--spacing-2);
+    background: var(--color-border);
+}
+
+
+/* =========================================================
+   USER
+   ========================================================= */
+
+.topbar-user {
+    display: flex;
+    align-items: center;
+    padding: var(--spacing-1) var(--spacing-2);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: background var(--transition-fast);
+}
+
+    .topbar-user:hover {
+        background: var(--color-gray-100);
+    }
+
+.topbar-user-avatar {
+    width: 38px;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    background: linear-gradient( 135deg, #3b82f6, #1d4ed8 );
+    color: var(--color-white);
+    border-radius: var(--radius-full);
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-bold);
+    box-shadow: 0 3px 8px rgba(37, 99, 235, 0.25);
 }
 
 .topbar-user-info {
-    display: flex;
-    flex-direction: column;
+    min-width: 0;
+    margin-left: var(--spacing-3);
 }
 
 .topbar-user-name {
-    color: #111827;
-    font-size: 14px;
-    font-weight: 600;
+    max-width: 160px;
+    color: var(--color-text-primary);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-semibold);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .topbar-user-role {
-    color: #6b7280;
-    font-size: 12px;
+    margin-top: 2px;
+    color: var(--color-text-muted);
+    font-size: 11px;
 }
 
-/* Responsive */
-@media (max-width: 768px) {
-    .topbar {
-        margin-left: 220px;
-        padding: 0 16px;
-    }
+.topbar-user-arrow {
+    margin-left: var(--spacing-2);
+    color: var(--color-text-muted);
+    font-size: 11px;
+    transition: transform var(--transition-fast);
+}
+
+.topbar-user:hover .topbar-user-arrow {
+    transform: translateY(1px);
+}
+
+
+/* =========================================================
+   MAIN CONTENT OFFSET
+   ========================================================= */
+
+.app-content {
+    margin-left: var(--sidebar-width);
+    padding-top: var(--topbar-height);
+    min-height: 100vh;
+    transition: margin-left var(--transition-normal);
+}
+
+
+/* =========================================================
+   RESPONSIVE - TABLET
+   ========================================================= */
+
+@media (max-width: 1100px) {
 
     .topbar-search {
-        width: 160px;
+        width: 220px;
+        margin-left: var(--spacing-5);
     }
 
     .topbar-user-info {
         display: none;
     }
+
+    .topbar-user-arrow {
+        display: none;
+    }
 }
 
-@media (max-width: 576px) {
+
+/* =========================================================
+   RESPONSIVE - MOBILE
+   ========================================================= */
+
+@media (max-width: 768px) {
+
     .topbar {
-        margin-left: 70px;
+        left: 0;
+        padding: 0 var(--spacing-4);
+    }
+
+    .topbar-menu-button {
+        display: flex;
+    }
+
+    .topbar-page-title {
+        font-size: var(--font-size-lg);
+    }
+
+    .topbar-page-subtitle {
+        display: none;
     }
 
     .topbar-search {
         display: none;
     }
 
-    .topbar-subtitle {
+    .topbar-user-info,
+    .topbar-user-arrow {
+        display: none;
+    }
+
+    .app-content {
+        margin-left: 0;
+        padding-top: var(--topbar-height);
+    }
+}
+
+
+/* =========================================================
+   RESPONSIVE - SMALL MOBILE
+   ========================================================= */
+
+@media (max-width: 480px) {
+
+    .topbar {
+        padding: 0 var(--spacing-3);
+    }
+
+    .topbar-page-title {
+        font-size: var(--font-size-md);
+    }
+
+    .topbar-icon-button {
+        width: 36px;
+        height: 36px;
+    }
+
+    .topbar-user-avatar {
+        width: 34px;
+        height: 34px;
+    }
+
+    .topbar-divider {
         display: none;
     }
 }
