@@ -35,3 +35,22 @@ const TAB_TITLES = {
   'debt': 'Báo Cáo Công Nợ & Phân Tích Tuổi Nợ (Aging Report)',
   'audit': 'Nhật Ký Thao Tác Hệ Thống (Audit Trail)'
 };
+
+/**
+ * Điều hướng Tab (Hỗ trợ cả Single-Page Dashboard và Standalone HTML pages)
+ */
+function switchTab(tabKey) {
+  if (currentUserRole === 'client') {
+    switchUserRole('admin');
+    return;
+  }
+
+  const targetSection = document.getElementById('section-' + tabKey);
+
+  // Nếu trang hiện tại không chứa section này (đang ở trang standalone khác), chuyển hướng sang file HTML tương ứng
+  if (!targetSection) {
+    if (PAGE_URL_MAP[tabKey]) {
+      window.location.href = PAGE_URL_MAP[tabKey];
+      return;
+    }
+  }
