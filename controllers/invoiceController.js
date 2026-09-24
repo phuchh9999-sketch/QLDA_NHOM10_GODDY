@@ -126,3 +126,32 @@ exports.createInvoiceFromPlacement = async (req, res) => {
         res.status(500).json({ success: false, message: err.message });
     }
 };
+// Hủy hóa đơn
+exports.cancelInvoice = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const invoice = await Invoice.findByPk(id);
+        if (!invoice) return res.status(404).json({ success: false, message: 'Không tìm thấy hóa đơn!' });
+
+        if (parseFloat(invoice.paidAmount) > 0) {
+            return res.status(400).json({
+                success: false,
+                message: 'Hóa đơn này đã có giao dịch thanh toán phát sinh, không thể hủy!'
+            });
+        }
+
+        invoice.status = 'Cancelled';
+        await invoice.save();
+
+        await AuditLog.create({
+            userId: req.user ? req.user.id : null,
+            action: 'CANCEL_INVOICE',
+            module: 'INVOICES',
+            details: `Hủy hóa đơn dịch vụ ${invoice.invoiceCode}`
+        });
+
+        res.json({ success: true, message: `Đã hủy hóa đơn ${invoice.invoiceCode} thành công!` });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+};
