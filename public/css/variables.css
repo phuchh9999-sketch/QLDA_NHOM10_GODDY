@@ -1,0 +1,84 @@
+/* =========================================================
+   QLDA_NHOM10_GODDY
+   Frontend - NGUYEN_HOANG_PHUOC
+   FE-04: He thong bien giao dien
+   ========================================================= */
+
+:root {
+    /* =========================
+       MÀU CHỦ ĐẠO
+       ========================= */
+
+    --primary-color: #0d47a1;
+    --primary-dark: #08306b;
+    --primary-light: #e3f2fd;
+    --secondary-color: #1976d2;
+    /* =========================
+       MÀU TRẠNG THÁI
+       ========================= */
+
+    --success-color: #2e7d32;
+    --warning-color: #f9a825;
+    --danger-color: #c62828;
+    --info-color: #0288d1;
+    /* =========================
+       MÀU NỀN VÀ CHỮ
+       ========================= */
+
+    --white-color: #ffffff;
+    --black-color: #212121;
+    --text-color: #333333;
+    --text-secondary-color: #666666;
+    --background-color: #f5f7fa;
+    --border-color: #dcdfe3;
+    /* =========================
+       FONT
+       ========================= */
+
+    --font-family: Arial, Helvetica, sans-serif;
+    --font-size-xs: 12px;
+    --font-size-sm: 14px;
+    --font-size-md: 16px;
+    --font-size-lg: 20px;
+    --font-size-xl: 24px;
+    --font-size-xxl: 32px;
+    /* =========================
+       KHOẢNG CÁCH
+       ========================= */
+
+    --spacing-xs: 4px;
+    --spacing-sm: 8px;
+    --spacing-md: 16px;
+    --spacing-lg: 24px;
+    --spacing-xl: 32px;
+    --spacing-xxl: 48px;
+    /* =========================
+       BO GÓC
+       ========================= */
+
+    --radius-sm: 4px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+    --radius-round: 999px;
+    /* =========================
+       ĐỔ BÓNG
+       ========================= */
+
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.10);
+    --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
+    /* =========================
+       KÍCH THƯỚC
+       ========================= */
+
+    --sidebar-width: 240px;
+    --header-height: 64px;
+    --content-max-width: 1400px;
+    /* =========================
+       TRANSITION
+       ========================= */
+
+    --transition-fast: 0.15s ease;
+    --transition-normal: 0.2s ease;
+    --transition-slow: 0.3s ease;
+}
