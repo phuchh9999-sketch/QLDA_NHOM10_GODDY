@@ -1,6 +1,14 @@
 # QLDA_NHOM10_GODDY - PHẦN MỀM QUẢN LÝ HÓA ĐƠN / CÔNG NỢ TÍCH HỢP DASHBOARD DỮ LIỆU CHO TUYỂN DỤNG
 
+> **Nhánh:** `tailieu` — Chuyên trách quản lý và lưu trữ tài liệu đặc tả yêu cầu, thiết kế kiến trúc, biên bản họp và tiến độ dự án.
+
 > Phần mềm giúp các công ty dịch vụ tuyển dụng nhân sự (Headhunt) tự động hóa quy trình chốt hợp đồng tuyển dụng (Deal) ➔ Xuất hóa đơn VAT ➔ Theo dõi và thu hồi công nợ B2B ➔ Phân tích tài chính qua biểu đồ Dashboard.
+
+---
+
+## 📂 DANH MỤC TÀI LIỆU TRÊN NHÁNH
+- 📄 [DANH_SACH_TASK.md](DANH_SACH_TASK.md): Bảng phân rã 160 task chi tiết của 8 module dự án.
+- 📁 [tailieu/](tailieu/): Thư mục lưu trữ tài liệu đặc tả yêu cầu (SRS), thiết kế CSDL, báo cáo & biên bản.
 
 ---
 
