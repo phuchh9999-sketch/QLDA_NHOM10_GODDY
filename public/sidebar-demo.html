@@ -8,6 +8,7 @@
 
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/sidebar.css">
+    <link rel="stylesheet" href="css/topbar.css">
 </head>
 
 <body>
@@ -117,14 +118,62 @@
 
     <!-- Nội dung mẫu -->
     <main class="main-content">
+        <!-- Topbar -->
+        <header class="topbar">
 
-        <h1>Dashboard</h1>
+            <div class="topbar-left">
+                <div>
+                    <h1 class="topbar-title">Dashboard</h1>
+                    <p class="topbar-subtitle">
+                        Tổng quan hệ thống
+                    </p>
+                </div>
+            </div>
 
-        <p>
-            Khu vực nội dung chính của hệ thống quản lý hóa đơn,
-            công nợ và tuyển dụng.
-        </p>
+            <div class="topbar-right">
 
+                <input type="search"
+                       class="topbar-search"
+                       placeholder="Tìm kiếm...">
+
+                <button type="button"
+                        class="topbar-icon-button"
+                        title="Thông báo">
+                    🔔
+                </button>
+
+                <div class="topbar-user">
+
+                    <div class="topbar-avatar">
+                        PH
+                    </div>
+
+                    <div class="topbar-user-info">
+                        <span class="topbar-user-name">
+                            NGUYEN HOANG PHUOC
+                        </span>
+
+                        <span class="topbar-user-role">
+                            Frontend Developer
+                        </span>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </header>
+
+        <!-- Nội dung chính -->
+        <main class="main-content">
+
+            <h2>Nội dung Dashboard</h2>
+
+            <p>
+                Khu vực nội dung chính của hệ thống.
+            </p>
+
+        </main>
     </main>
 
 </body>
