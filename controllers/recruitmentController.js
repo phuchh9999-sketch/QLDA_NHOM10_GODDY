@@ -161,3 +161,18 @@ exports.createPlacement = async (req, res) => {
             warrantyEndDate: warrantyEnd.toISOString().split('T')[0],
             status: 'UnderWarranty'
         });
+        // Cập nhật trạng thái ứng viên và Job
+        await Candidate.update({ status: 'Placed' }, { where: { id: candidateId } });
+
+        await AuditLog.create({
+            userId: req.user ? req.user.id : null,
+            action: 'CREATE_PLACEMENT',
+            module: 'RECRUITMENT',
+            details: `Chốt deal tuyển dụng ID ${placement.id}: Phí dịch vụ ${serviceFee.toLocaleString()}đ, Bảo hành đến ${placement.warrantyEndDate}`
+        });
+
+        res.status(201).json({ success: true, message: 'Ghi nhận deal tuyển dụng onboard thành công!', placement });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+};
