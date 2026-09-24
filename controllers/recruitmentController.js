@@ -98,3 +98,34 @@ exports.createCandidate = async (req, res) => {
         res.status(500).json({ success: false, message: err.message });
     }
 };
+// =================== 3. QUẢN LÝ PLACEMENTS (DEAL CHỐT ONBOARD) ===================
+exports.getPlacements = async (req, res) => {
+    try {
+        const placements = await Placement.findAll({
+            include: [
+                { model: Job, attributes: ['id', 'title', 'department'] },
+                { model: Candidate, attributes: ['id', 'fullName', 'email', 'phone'] },
+                { model: Client, attributes: ['id', 'companyName', 'taxCode', 'paymentTermDays'] },
+                { model: User, as: 'recruiter', attributes: ['id', 'fullName', 'username'] },
+                { model: Invoice, attributes: ['id', 'invoiceCode', 'status', 'totalAmount', 'remainingAmount'] }
+            ],
+            order: [['id', 'DESC']]
+        });
+        res.json({ success: true, placements });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+};
+
+exports.createPlacement = async (req, res) => {
+    try {
+        const { jobId, candidateId, clientId, recruiterId, officialSalary, feeRatePercent, onboardDate, warrantyDays } = req.body;
+
+        if (!jobId || !candidateId || !clientId || !officialSalary || !onboardDate) {
+            return res.status(400).json({ success: false, message: 'Vui lòng điền đầy đủ các thông tin bắt buộc của deal tuyển dụng!' });
+        }
+
+        const salary = parseFloat(officialSalary);
+        if (isNaN(salary) || salary <= 0) {
+            return res.status(400).json({ success: false, message: 'Mức lương chính thức phải là số dương lớn hơn 0!' });
+        }
