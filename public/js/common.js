@@ -54,3 +54,10 @@ function switchTab(tabKey) {
       return;
     }
   }
+  
+    // Nếu đang ở trang chứa đầy đủ các section (index.html), ẩn/hiện theo phong cách SPA
+  const sections = ['dashboard', 'clients', 'recruitment', 'invoices', 'debt', 'audit', 'client-portal'];
+  sections.forEach(s => {
+    const el = document.getElementById('section-' + s);
+    if (el) el.style.display = (s === tabKey) ? 'block' : 'none';
+  });
