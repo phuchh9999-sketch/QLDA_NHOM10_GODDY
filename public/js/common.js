@@ -274,3 +274,23 @@ async function submitLogin(e) {
     alert('Lỗi kết nối máy chủ!');
   }
 }
+
+// Khởi tạo Dashboard hoặc Cổng Khách Hàng khi trang load xong
+document.addEventListener('DOMContentLoaded', () => {
+  const urlParams = new URLSearchParams(window.location.search);
+  const roleParam = urlParams.get('role');
+  const clientParam = parseInt(urlParams.get('clientId')) || 1;
+
+  if (roleParam === 'client') {
+    switchUserRole('client', clientParam);
+  } else if (roleParam === 'accountant' || roleParam === 'ketoan') {
+    switchUserRole('accountant');
+  } else if (roleParam === 'recruiter') {
+    switchUserRole('recruiter');
+  } else {
+    // Chỉ tự động gọi loadDashboard nếu trang hiện tại có section dashboard
+    if (document.getElementById('section-dashboard') && typeof loadDashboard === 'function') {
+      loadDashboard();
+    }
+  }
+});
