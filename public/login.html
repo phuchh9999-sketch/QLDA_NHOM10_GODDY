@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Đăng nhập - GODDY ERP</title>
+
+
+    <!-- =====================================================
+         DESIGN SYSTEM
+         ===================================================== -->
+
+    <link
+        rel="stylesheet"
+        href="css/variables.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="css/style.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="css/form-controls.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="css/components.css"
+    >
+
+
+    <!-- =====================================================
+         LOGIN CSS
+         ===================================================== -->
+
+    <link
+        rel="stylesheet"
+        href="css/login.css"
+    >
+
+</head>
+
+
+<body>
+
+
+    <!-- =====================================================
+         LOGIN PAGE
+         ===================================================== -->
+
+    <main class="login-page">
+
+
+        <!-- =================================================
+             LEFT - BRAND
+             ================================================= -->
+
+        <section class="login-brand-panel">
+
+            <div class="login-brand">
+
+
+                <div class="login-brand-logo">
+                    GD
+                </div>
+
+
+                <h2 class="login-brand-title">
+                    GODDY ERP
+                </h2>
+
+
+                <p class="login-brand-description">
+                    Hệ thống quản lý hóa đơn, công nợ và dữ liệu
+                    tuyển dụng tập trung cho doanh nghiệp.
+                </p>
+
+
+                <ul class="login-feature-list">
+
+
+                    <!-- Feature 1 -->
+
+                    <li class="login-feature-item">
+
+                        <div class="login-feature-icon">
+                            ✓
+                        </div>
+
+                        <div class="login-feature-content">
+
+                            <strong>
+                                Quản lý tài chính
+                            </strong>
+
+                            <span>
+                                Theo dõi hóa đơn, công nợ và thanh toán
+                                tập trung.
+                            </span>
+
+                        </div>
+
+                    </li>
+
+
+                    <!-- Feature 2 -->
+
+                    <li class="login-feature-item">
+
+                        <div class="login-feature-icon">
+                            ◈
+                        </div>
+
+                        <div class="login-feature-content">
+
+                            <strong>
+                                Dashboard dữ liệu
+                            </strong>
+
+                            <span>
+                                Tổng hợp KPI và báo cáo để hỗ trợ
+                                theo dõi hoạt động.
+                            </span>
+
+                        </div>
+
+                    </li>
+
+
+                    <!-- Feature 3 -->
+
+                    <li class="login-feature-item">
+
+                        <div class="login-feature-icon">
+                            ◉
+                        </div>
+
+                        <div class="login-feature-content">
+
+                            <strong>
+                                Phân quyền người dùng
+                            </strong>
+
+                            <span>
+                                Kiểm soát chức năng theo vai trò
+                                của từng người dùng.
+                            </span>
+
+                        </div>
+
+                    </li>
+
+
+                </ul>
+
+            </div>
+
+
+            <div class="login-brand-footer">
+                © 2026 GODDY ERP. All rights reserved.
+            </div>
+
+        </section>
+
+
+
+        <!-- =================================================
+             RIGHT - LOGIN FORM
+             ================================================= -->
+
+        <section class="login-form-panel">
+
+
+            <div class="login-form-wrapper">
+
+
+                <!-- Header -->
+
+                <header class="login-form-header">
+
+                    <h1>
+                        Chào mừng trở lại
+                    </h1>
+
+                    <p>
+                        Đăng nhập vào tài khoản GODDY ERP để tiếp tục.
+                    </p>
+
+                </header>
+
+
+
+                <!-- Message -->
+
+                <div
+                    id="loginMessage"
+                    class="login-message"
+                    aria-live="polite"
+                ></div>
+
+
+
+                <!-- Login Form -->
+
+                <form
+                    id="loginForm"
+                    class="login-form"
+                    novalidate
+                >
+
+
+                    <!-- Username -->
+
+                    <div class="form-group">
+
+                        <label
+                            class="form-label"
+                            for="loginIdentifier"
+                        >
+                            Email hoặc tên đăng nhập
+                        </label>
+
+
+                        <input
+                            id="loginIdentifier"
+                            name="identifier"
+                            type="text"
+                            class="login-input"
+                            placeholder="Nhập email hoặc tên đăng nhập"
+                            autocomplete="off"
+                            required
+                        >
+
+                    </div>
+
+
+
+                    <!-- Password -->
+
+                    <div class="form-group">
+
+                        <label
+                            class="form-label"
+                            for="loginPassword"
+                        >
+                            Mật khẩu
+                        </label>
+
+
+                        <div class="login-input-wrapper">
+
+
+                            <input
+                                id="loginPassword"
+                                name="password"
+                                type="password"
+                                class="login-input password-input"
+                                placeholder="Nhập mật khẩu"
+                                autocomplete="off"
+                                required
+                            >
+
+
+                            <button
+                                id="passwordToggle"
+                                type="button"
+                                class="password-toggle"
+                                aria-label="Hiện mật khẩu"
+                                title="Hiện mật khẩu"
+                            >
+                                👁
+                            </button>
+
+
+                        </div>
+
+                    </div>
+
+
+
+                    <!-- Options -->
+
+                    <div class="login-options">
+
+
+                        <label class="login-remember">
+
+                            <input
+                                id="rememberMe"
+                                name="rememberMe"
+                                type="checkbox"
+                            >
+
+                            <span>
+                                Ghi nhớ đăng nhập
+                            </span>
+
+                        </label>
+
+
+
+                        <a
+                            href="#"
+                            id="forgotPasswordLink"
+                            class="login-forgot-link"
+                        >
+                            Quên mật khẩu?
+                        </a>
+
+
+                    </div>
+
+
+
+                    <!-- Submit -->
+
+                    <button
+                        id="loginSubmit"
+                        type="submit"
+                        class="login-submit"
+                    >
+
+                        <span id="loginSubmitText">
+                            Đăng nhập
+                        </span>
+
+                    </button>
+
+
+                </form>
+
+
+
+                <!-- Security -->
+
+                <div class="login-security-note">
+
+                    <span class="login-security-icon">
+                        🔒
+                    </span>
+
+                    <span>
+                        Thông tin đăng nhập của bạn được sử dụng để
+                        xác thực tài khoản và xác định quyền truy cập
+                        theo vai trò.
+                    </span>
+
+                </div>
+
+
+            </div>
+
+        </section>
+
+
+    </main>
+
+
+
+    <!-- =====================================================
+         JAVASCRIPT
+         ===================================================== -->
+
+    <script src="js/common.js"></script>
+
+    <script src="js/api.js"></script>
+
+    <script src="js/login.js"></script>
+
+
+</body>
+
+</html>
