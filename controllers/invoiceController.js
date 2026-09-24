@@ -36,3 +36,27 @@ exports.getInvoices = async (req, res) => {
     res.status(500).json({ success: false, message: err.message });
   }
 };
+// Lấy chi tiết một hóa đơn
+exports.getInvoiceById = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const invoice = await Invoice.findByPk(id, {
+            include: [
+                { model: Client },
+                {
+                    model: Placement,
+                    include: [{ model: Candidate }, { model: Job }]
+                },
+                { model: Payment, order: [['id', 'DESC']] }
+            ]
+        });
+
+        if (!invoice) {
+            return res.status(404).json({ success: false, message: 'Không tìm thấy hóa đơn!' });
+        }
+
+        res.json({ success: true, invoice });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+};
