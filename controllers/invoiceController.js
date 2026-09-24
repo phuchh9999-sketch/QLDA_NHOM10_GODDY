@@ -90,3 +90,39 @@ exports.createInvoiceFromPlacement = async (req, res) => {
         const vatAmount = subtotal * (vat / 100);
         const totalAmount = subtotal + vatAmount;
 
+        // Hạn thanh toán mặc định theo điều khoản Net Days của khách hàng
+        const issueDate = new Date().toISOString().split('T')[0];
+        let computedDueDate = dueDate;
+        if (!computedDueDate) {
+            const d = new Date();
+            d.setDate(d.getDate() + (placement.Client.paymentTermDays || 30));
+            computedDueDate = d.toISOString().split('T')[0];
+        }
+
+        const invoice = await Invoice.create({
+            invoiceCode,
+            clientId: placement.clientId,
+            placementId: placement.id,
+            subtotal,
+            vatRate: vat,
+            vatAmount,
+            totalAmount,
+            paidAmount: 0,
+            remainingAmount: totalAmount,
+            issueDate,
+            dueDate: computedDueDate,
+            status: 'Sent'
+        });
+
+        await AuditLog.create({
+            userId: req.user ? req.user.id : null,
+            action: 'ISSUE_INVOICE',
+            module: 'INVOICES',
+            details: `Phát hành hóa đơn ${invoiceCode} cho khách hàng ${placement.Client.companyName}, tổng tiền: ${totalAmount.toLocaleString()}đ (VAT ${vat}%)`
+        });
+
+        res.status(201).json({ success: true, message: 'Phát hành hóa đơn thành công!', invoice });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+};
