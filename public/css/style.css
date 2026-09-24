@@ -1,0 +1,248 @@
+/* =========================================================
+   QLDA_NHOM10_GODDY
+   Frontend - NGUYEN_HOANG_PHUOC
+   FE-02: CSS nền tảng
+   ========================================================= */
+
+/* ---------- Biến giao diện ---------- */
+
+:root {
+    --color-primary: #0d47a1;
+    --color-primary-dark: #08306b;
+    --color-primary-light: #e3f2fd;
+    --color-secondary: #1976d2;
+    --color-success: #2e7d32;
+    --color-warning: #f9a825;
+    --color-danger: #c62828;
+    --color-info: #0288d1;
+    --color-white: #ffffff;
+    --color-black: #212121;
+    --color-text: #333333;
+    --color-text-light: #666666;
+    --color-background: #f5f7fa;
+    --color-border: #dcdfe3;
+    --font-family: Arial, Helvetica, sans-serif;
+    --radius-sm: 4px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.10);
+    --spacing-xs: 4px;
+    --spacing-sm: 8px;
+    --spacing-md: 16px;
+    --spacing-lg: 24px;
+    --spacing-xl: 32px;
+}
+
+
+/* ---------- Reset cơ bản ---------- */
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html {
+    font-size: 16px;
+}
+
+body {
+    font-family: var(--font-family);
+    color: var(--color-text);
+    background-color: var(--color-background);
+    line-height: 1.5;
+}
+
+
+/* ---------- Tiêu đề ---------- */
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    color: var(--color-text);
+    font-weight: 600;
+    margin-bottom: var(--spacing-md);
+}
+
+
+/* ---------- Link ---------- */
+
+a {
+    color: var(--color-primary);
+    text-decoration: none;
+}
+
+    a:hover {
+        text-decoration: underline;
+    }
+
+
+/* ---------- Button cơ bản ---------- */
+
+button,
+.btn {
+    border: none;
+    border-radius: var(--radius-sm);
+    padding: 10px 16px;
+    font-family: inherit;
+    font-size: 14px;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.btn-primary {
+    background-color: var(--color-primary);
+    color: var(--color-white);
+}
+
+    .btn-primary:hover {
+        background-color: var(--color-primary-dark);
+    }
+
+.btn-success {
+    background-color: var(--color-success);
+    color: var(--color-white);
+}
+
+.btn-warning {
+    background-color: var(--color-warning);
+    color: var(--color-black);
+}
+
+.btn-danger {
+    background-color: var(--color-danger);
+    color: var(--color-white);
+}
+
+
+/* ---------- Form ---------- */
+
+input,
+select,
+textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    background-color: var(--color-white);
+    font-family: inherit;
+    font-size: 14px;
+    outline: none;
+}
+
+    input:focus,
+    select:focus,
+    textarea:focus {
+        border-color: var(--color-primary);
+        box-shadow: 0 0 0 2px var(--color-primary-light);
+    }
+
+
+/* ---------- Card ---------- */
+
+.card {
+    background-color: var(--color-white);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-lg);
+    box-shadow: var(--shadow-sm);
+}
+
+
+/* ---------- Table ---------- */
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: var(--color-white);
+}
+
+    .table th,
+    .table td {
+        padding: 12px;
+        border-bottom: 1px solid var(--color-border);
+        text-align: left;
+    }
+
+    .table th {
+        background-color: var(--color-primary);
+        color: var(--color-white);
+        font-weight: 600;
+    }
+
+    .table tbody tr:hover {
+        background-color: var(--color-primary-light);
+    }
+
+
+/* ---------- Badge ---------- */
+
+.badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.badge-success {
+    color: var(--color-success);
+    background-color: #e8f5e9;
+}
+
+.badge-warning {
+    color: #8a6d00;
+    background-color: #fff8e1;
+}
+
+.badge-danger {
+    color: var(--color-danger);
+    background-color: #ffebee;
+}
+
+.badge-info {
+    color: var(--color-info);
+    background-color: #e1f5fe;
+}
+
+
+/* ---------- Layout ---------- */
+
+.container {
+    width: 100%;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 var(--spacing-lg);
+}
+
+.page-title {
+    margin-bottom: var(--spacing-lg);
+}
+
+.grid {
+    display: grid;
+    gap: var(--spacing-lg);
+}
+
+
+/* ---------- Responsive cơ bản ---------- */
+
+@media (max-width: 768px) {
+    .container {
+        padding: 0 var(--spacing-md);
+    }
+
+    .table {
+        display: block;
+        overflow-x: auto;
+    }
+
+    button,
+    .btn {
+        width: 100%;
+    }
+}
