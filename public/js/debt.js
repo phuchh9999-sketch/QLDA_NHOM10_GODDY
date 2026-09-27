@@ -1,7 +1,7 @@
 /**
  * =========================================================
  * GODDY RECRUIT - Debt & Aging Module
- * FE-15 / FE-16
+ * FE-15 / FE-16 / FE-17
  * =========================================================
  *
  * FE-15:
@@ -14,8 +14,17 @@
  * - Tìm kiếm mã hóa đơn / khách hàng
  * - Lọc theo tuổi nợ
  * - Đếm số kết quả
- * - Render danh sách từ dữ liệu hiện có
- * - Giữ nguyên Thu Tiền / Nhắc Nợ / Xuất CSV
+ *
+ * FE-17:
+ * - Xem chi tiết một khoản công nợ
+ * - Modal chi tiết được tạo động bằng JavaScript
+ * - Không thay đổi cấu trúc debt.html
+ *
+ * Giữ nguyên:
+ * - Thu Tiền
+ * - Nhắc Nợ
+ * - Xuất CSV
+ * - Endpoint/backend contract hiện tại
  * =========================================================
  */
 
@@ -97,13 +106,16 @@
             return 'current';
         }
 
+
         if (overdueDays <= 30) {
             return '1-30';
         }
 
+
         if (overdueDays <= 60) {
             return '31-60';
         }
+
 
         return '60+';
     }
@@ -119,6 +131,7 @@
             getElement(
                 'debtErrorAlert'
             );
+
 
         if (existing) {
             existing.remove();
@@ -136,6 +149,7 @@
             getElement(
                 'section-debt'
             );
+
 
         if (!section) {
             return;
@@ -202,6 +216,7 @@
                 const element =
                     getElement(id);
 
+
                 if (!element) {
                     return;
                 }
@@ -243,10 +258,12 @@
                 'debtAging1to30'
             );
 
+
         const aging31to60 =
             getElement(
                 'debtAging31to60'
             );
+
 
         const agingAbove60 =
             getElement(
@@ -297,6 +314,7 @@
                 'debtTableBody'
             );
 
+
         if (!tableBody) {
             return null;
         }
@@ -306,6 +324,7 @@
             tableBody.closest(
                 '.table-box'
             );
+
 
         if (!tableBox) {
             return null;
@@ -331,6 +350,7 @@
 
         toolbar.id =
             'debtListToolbar';
+
 
         toolbar.className =
             'ui-toolbar mb-3';
@@ -431,10 +451,12 @@
                 'debtSearchInput'
             );
 
+
         const filterSelect =
             getElement(
                 'debtAgingFilter'
             );
+
 
         const resetButton =
             getElement(
@@ -520,8 +542,7 @@
     function getFilteredDebtList() {
 
         const search =
-            currentDebtSearch
-                .toLowerCase();
+            currentDebtSearch.toLowerCase();
 
 
         return currentDebtList.filter(
@@ -551,7 +572,9 @@
 
 
                 const aging =
-                    getAgingType(item);
+                    getAgingType(
+                        item
+                    );
 
 
                 const matchesFilter =
@@ -631,6 +654,380 @@
         renderDebtResultCount(
             0
         );
+
+    }
+
+
+    // =======================================================
+    // FE-17 - DETAIL MODAL
+    // =======================================================
+
+    function ensureDebtDetailModal() {
+
+        let modal =
+            getElement(
+                'modalDebtDetail'
+            );
+
+
+        if (modal) {
+            return modal;
+        }
+
+
+        modal =
+            document.createElement(
+                'div'
+            );
+
+
+        modal.id =
+            'modalDebtDetail';
+
+
+        modal.className =
+            'modal fade';
+
+
+        modal.tabIndex =
+            -1;
+
+
+        modal.setAttribute(
+            'aria-hidden',
+            'true'
+        );
+
+
+        modal.innerHTML = `
+      <div
+        class="modal-dialog modal-lg modal-dialog-centered"
+      >
+
+        <div class="modal-content border-0 shadow-lg">
+
+          <div class="modal-header">
+
+            <div>
+
+              <div
+                class="text-muted small text-uppercase fw-bold mb-1"
+              >
+                Chi tiết khoản công nợ
+              </div>
+
+              <h5
+                class="modal-title"
+                id="debtDetailTitle"
+              >
+                Chi tiết hóa đơn
+              </h5>
+
+            </div>
+
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Đóng"
+            ></button>
+
+          </div>
+
+
+          <div class="modal-body">
+
+            <div
+              id="debtDetailBody"
+            ></div>
+
+          </div>
+
+
+          <div class="modal-footer">
+
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-bs-dismiss="modal"
+            >
+              Đóng
+            </button>
+
+          </div>
+
+        </div>
+
+      </div>
+    `;
+
+
+        document.body.appendChild(
+            modal
+        );
+
+
+        return modal;
+    }
+
+
+    function showDebtDetail(
+        debt
+    ) {
+
+        if (!debt) {
+            return;
+        }
+
+
+        const modalEl =
+            ensureDebtDetailModal();
+
+
+        const titleEl =
+            getElement(
+                'debtDetailTitle'
+            );
+
+
+        const bodyEl =
+            getElement(
+                'debtDetailBody'
+            );
+
+
+        if (!modalEl || !bodyEl) {
+            return;
+        }
+
+
+        const invoiceCode =
+            debt.invoiceCode ||
+            '-';
+
+
+        const clientName =
+            getClientName(
+                debt
+            );
+
+
+        const remaining =
+            safeNumber(
+                debt.remainingAmount
+            );
+
+
+        const overdueDays =
+            safeNumber(
+                debt.overdueDays
+            );
+
+
+        const aging =
+            debt.agingCategory ||
+            '-';
+
+
+        const dueDate =
+            debt.dueDate ||
+            '-';
+
+
+        const statusClass =
+            overdueDays > 0
+                ? 'bg-danger'
+                : 'bg-success';
+
+
+        const statusText =
+            overdueDays > 0
+                ? `${overdueDays} ngày quá hạn`
+                : 'Trong hạn';
+
+
+        if (titleEl) {
+
+            titleEl.textContent =
+                invoiceCode;
+
+        }
+
+
+        bodyEl.innerHTML = `
+
+      <div class="row g-3">
+
+        <div class="col-md-6">
+
+          <div class="ui-card h-100">
+
+            <div
+              class="ui-card-subtitle"
+            >
+              Hóa đơn
+            </div>
+
+            <div
+              class="ui-card-title"
+            >
+              ${escapeHtml(
+            invoiceCode
+        )}
+            </div>
+
+            <div
+              class="mt-3 small"
+            >
+              <div class="mb-2">
+                <span class="text-muted">
+                  Khách hàng:
+                </span>
+
+                <strong>
+                  ${escapeHtml(
+            clientName
+        )}
+                </strong>
+              </div>
+
+              <div class="mb-2">
+                <span class="text-muted">
+                  Hạn trả:
+                </span>
+
+                <strong>
+                  ${escapeHtml(
+            dueDate
+        )}
+                </strong>
+              </div>
+
+              <div>
+                <span class="text-muted">
+                  Phân loại:
+                </span>
+
+                <strong>
+                  ${escapeHtml(
+            aging
+        )}
+                </strong>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <div class="col-md-6">
+
+          <div class="ui-card h-100">
+
+            <div
+              class="ui-card-subtitle"
+            >
+              Trạng thái công nợ
+            </div>
+
+            <div class="mt-2">
+
+              <span
+                class="badge ${statusClass}"
+              >
+                ${escapeHtml(
+            statusText
+        )}
+              </span>
+
+            </div>
+
+            <div
+              class="mt-3"
+            >
+
+              <div
+                class="ui-card-subtitle"
+              >
+                Số tiền còn nợ
+              </div>
+
+              <div
+                class="fs-4 fw-bold text-danger"
+              >
+                ${formatMoneySafe(
+            remaining
+        )}
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <div class="col-12">
+
+          <div
+            class="ui-alert ${overdueDays > 0
+                ? 'ui-alert-danger'
+                : 'ui-alert-success'
+            }"
+          >
+
+            <i
+              class="fa-solid ${overdueDays > 0
+                ? 'fa-triangle-exclamation'
+                : 'fa-circle-check'
+            }"
+            ></i>
+
+            <div>
+
+              <div class="fw-bold">
+                ${overdueDays > 0
+                ? 'Khoản nợ đang quá hạn'
+                : 'Khoản nợ đang trong hạn'
+            }
+              </div>
+
+              <div class="small">
+
+                ${overdueDays > 0
+                ? `Hóa đơn đã quá hạn ${overdueDays} ngày.`
+                : 'Hóa đơn chưa vượt quá ngày thanh toán.'
+            }
+
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    `;
+
+
+        if (
+            window.bootstrap &&
+            window.bootstrap.Modal
+        ) {
+
+            const modal =
+                window.bootstrap.Modal
+                    .getOrCreateInstance(
+                        modalEl
+                    );
+
+
+            modal.show();
+
+        }
 
     }
 
@@ -776,6 +1173,17 @@
 
                     <button
                       type="button"
+                      class="btn btn-sm btn-outline-primary"
+                      onclick='showDebtDetailById(
+                        ${invoiceId}
+                      )'
+                    >
+                      <i class="fa-solid fa-eye me-1"></i>
+                      Chi tiết
+                    </button>
+
+                    <button
+                      type="button"
                       class="btn btn-sm btn-success"
                       onclick='openRecordPayment(
                         ${invoiceId},
@@ -808,6 +1216,49 @@
                     }
                 )
                 .join('');
+
+    }
+
+
+    // =======================================================
+    // SHOW DETAIL BY ID - FE-17
+    // =======================================================
+
+    function showDebtDetailById(
+        invoiceId
+    ) {
+
+        const id =
+            safeNumber(
+                invoiceId
+            );
+
+
+        const debt =
+            currentDebtList.find(
+                function (item) {
+
+                    return safeNumber(
+                        item?.id
+                    ) === id;
+
+                }
+            );
+
+
+        if (!debt) {
+
+            alert(
+                'Không tìm thấy dữ liệu chi tiết công nợ.'
+            );
+
+            return;
+        }
+
+
+        showDebtDetail(
+            debt
+        );
 
     }
 
@@ -907,7 +1358,6 @@
 
 
             ensureDebtToolbar();
-
 
             applyDebtFilters();
 
@@ -1055,9 +1505,10 @@
         ) {
 
             const modalInstance =
-                window.bootstrap.Modal.getOrCreateInstance(
-                    modalEl
-                );
+                window.bootstrap.Modal
+                    .getOrCreateInstance(
+                        modalEl
+                    );
 
 
             modalInstance.show();
@@ -1567,6 +2018,14 @@
 
     window.exportDebtCSV =
         exportDebtCSV;
+
+
+    window.showDebtDetailById =
+        showDebtDetailById;
+
+
+    window.showDebtDetail =
+        showDebtDetail;
 
 
 })(window);
