@@ -1,7 +1,7 @@
 /**
  * =========================================================
  * GODDY RECRUIT - Debt & Aging Module
- * FE-15 / FE-16 / FE-17
+ * FE-15 / FE-16 / FE-17 / FE-18
  * =========================================================
  *
  * FE-15:
@@ -17,8 +17,14 @@
  *
  * FE-17:
  * - Xem chi tiết một khoản công nợ
- * - Modal chi tiết được tạo động bằng JavaScript
- * - Không thay đổi cấu trúc debt.html
+ * - Modal chi tiết tạo động
+ *
+ * FE-18:
+ * - Xác nhận trước khi gửi nhắc nợ
+ * - Trạng thái đang gửi
+ * - Chống click nhiều lần
+ * - Gọi API qua GoddyAPI
+ * - Khôi phục button khi lỗi
  *
  * Giữ nguyên:
  * - Thu Tiền
@@ -879,6 +885,7 @@
             <div
               class="mt-3 small"
             >
+
               <div class="mb-2">
                 <span class="text-muted">
                   Khách hàng:
@@ -914,6 +921,7 @@
         )}
                 </strong>
               </div>
+
             </div>
 
           </div>
@@ -943,9 +951,7 @@
 
             </div>
 
-            <div
-              class="mt-3"
-            >
+            <div class="mt-3">
 
               <div
                 class="ui-card-subtitle"
@@ -1174,9 +1180,7 @@
                     <button
                       type="button"
                       class="btn btn-sm btn-outline-primary"
-                      onclick='showDebtDetailById(
-                        ${invoiceId}
-                      )'
+                      onclick="showDebtDetailById(${invoiceId})"
                     >
                       <i class="fa-solid fa-eye me-1"></i>
                       Chi tiết
@@ -1200,7 +1204,7 @@
                     <button
                       type="button"
                       class="btn btn-sm btn-outline-danger"
-                      onclick="sendDebtReminder(${invoiceId})"
+                      onclick="sendDebtReminder(${invoiceId}, this)"
                     >
                       <i class="fa-solid fa-bell me-1"></i>
                       Nhắc Nợ
@@ -1221,7 +1225,7 @@
 
 
     // =======================================================
-    // SHOW DETAIL BY ID - FE-17
+    // SHOW DETAIL BY ID
     // =======================================================
 
     function showDebtDetailById(
@@ -1733,11 +1737,12 @@
 
 
     // =======================================================
-    // DEBT REMINDER
+    // FE-18 - DEBT REMINDER
     // =======================================================
 
     async function sendDebtReminder(
-        invoiceId
+        invoiceId,
+        buttonElement = null
     ) {
 
         const id =
@@ -1757,10 +1762,66 @@
         }
 
 
+        const button =
+            buttonElement || null;
+
+
+        // -----------------------------------------------------
+        // XÁC NHẬN
+        // -----------------------------------------------------
+
+        const confirmed =
+            window.confirm(
+                'Bạn có chắc muốn gửi nhắc nợ cho hóa đơn này không?'
+            );
+
+
+        if (!confirmed) {
+            return;
+        }
+
+
+        // -----------------------------------------------------
+        // DISABLE BUTTON
+        // -----------------------------------------------------
+
+        let originalHtml =
+            '';
+
+
+        if (button) {
+
+            originalHtml =
+                button.innerHTML;
+
+            button.disabled =
+                true;
+
+            button.innerHTML = `
+        <span
+          class="spinner-border spinner-border-sm me-1"
+          role="status"
+          aria-hidden="true"
+        ></span>
+        Đang gửi...
+      `;
+
+            button.setAttribute(
+                'aria-busy',
+                'true'
+            );
+
+        }
+
+
         try {
 
             let data;
 
+
+            // ---------------------------------------------------
+            // Ưu tiên GoddyAPI
+            // ---------------------------------------------------
 
             if (
                 window.GoddyAPI &&
@@ -1778,6 +1839,10 @@
                     );
 
             } else {
+
+                // -----------------------------------------------
+                // Fallback tương thích code cũ
+                // -----------------------------------------------
 
                 const response =
                     await fetch(
@@ -1815,6 +1880,19 @@
             }
 
 
+            if (
+                data &&
+                data.success === false
+            ) {
+
+                throw new Error(
+                    data.message ||
+                    'Không thể gửi nhắc nợ.'
+                );
+
+            }
+
+
             alert(
                 data?.message ||
                 'Đã gửi lời nhắc nợ thành công!'
@@ -1833,6 +1911,31 @@
                 error?.message ||
                 'Lỗi gửi nhắc nợ!'
             );
+
+
+        } finally {
+
+            // ---------------------------------------------------
+            // KHÔI PHỤC BUTTON
+            // ---------------------------------------------------
+
+            if (button) {
+
+                button.disabled =
+                    false;
+
+                button.innerHTML =
+                    originalHtml ||
+                    `
+            <i class="fa-solid fa-bell me-1"></i>
+            Nhắc Nợ
+          `;
+
+                button.removeAttribute(
+                    'aria-busy'
+                );
+
+            }
 
         }
 
