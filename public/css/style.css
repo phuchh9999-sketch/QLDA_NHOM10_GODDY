@@ -1577,3 +1577,286 @@ textarea {
         animation-iteration-count: 1 !important;
     }
 }
+/* =========================================================
+   LOGIN UI - FE-11
+   ========================================================= */
+
+#modalLogin .modal-dialog {
+    max-width: 430px;
+    width: calc(100% - 24px);
+}
+
+#modalLogin .modal-content {
+    overflow: hidden;
+    border-radius: 22px !important;
+    border: 1px solid rgba(226, 232, 240, 0.9) !important;
+    background: linear-gradient( 180deg, #ffffff 0%, #f8fafc 100% );
+    box-shadow: 0 24px 70px rgba(15, 23, 42, 0.20) !important;
+}
+
+
+/* Header */
+
+#modalLogin .modal-header {
+    position: relative;
+    min-height: 42px;
+    padding: 12px 16px 0;
+    background: transparent;
+    border: 0 !important;
+}
+
+    #modalLogin .modal-header .btn-close {
+        width: 34px;
+        height: 34px;
+        padding: 0;
+        margin: 0;
+        border-radius: 10px;
+        background-color: #f1f5f9;
+        opacity: 1;
+        transition: background-color 0.2s ease, transform 0.2s ease;
+    }
+
+        #modalLogin .modal-header .btn-close:hover {
+            background-color: #e2e8f0;
+            transform: rotate(3deg);
+        }
+
+
+/* Body */
+
+#modalLogin .modal-body {
+    padding: 8px 32px 28px !important;
+}
+
+
+/* Logo */
+
+#modalLogin .sidebar-logo-icon {
+    width: 62px !important;
+    height: 62px !important;
+    font-size: 25px !important;
+    border-radius: 18px;
+    margin-bottom: 14px !important;
+    background: linear-gradient( 135deg, #818cf8 0%, #6366f1 45%, #4338ca 100% );
+    box-shadow: 0 12px 28px rgba(79, 70, 229, 0.28);
+}
+
+#modalLogin .modal-body > .text-center h4 {
+    margin-bottom: 6px;
+    font-size: 22px;
+    letter-spacing: -0.4px;
+    color: #0f172a;
+}
+
+#modalLogin .modal-body > .text-center .text-muted {
+    font-size: 12px;
+    line-height: 1.5;
+    color: #64748b !important;
+}
+
+
+/* Form */
+
+#modalLogin #formLogin {
+    margin-top: 24px;
+}
+
+#modalLogin .form-label {
+    margin-bottom: 7px;
+    color: #334155;
+    font-size: 12px;
+    font-weight: 700 !important;
+}
+
+#modalLogin .input-group {
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.03);
+}
+
+#modalLogin .input-group-text {
+    width: 44px;
+    justify-content: center;
+    border: 1px solid #cbd5e1;
+    border-right: 0;
+    background: #f8fafc !important;
+    color: #64748b;
+}
+
+#modalLogin .input-group .form-control {
+    min-height: 44px;
+    padding: 9px 12px;
+    border: 1px solid #cbd5e1;
+    border-left: 0;
+    background: #fff;
+    color: #0f172a;
+    font-size: 13px;
+    box-shadow: none;
+    transition: border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+#modalLogin .input-group:focus-within .input-group-text {
+    border-color: var(--primary);
+    background: #eef2ff !important;
+    color: var(--primary);
+}
+
+#modalLogin .input-group:focus-within .form-control {
+    border-color: var(--primary);
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.08);
+}
+
+#modalLogin .form-control::placeholder {
+    color: #94a3b8;
+}
+
+#modalLogin .form-text {
+    margin-top: 7px;
+    color: #64748b;
+    font-size: 10.5px !important;
+    line-height: 1.45;
+}
+
+    #modalLogin .form-text code {
+        padding: 2px 6px;
+        border-radius: 5px;
+        background: #eef2ff;
+        color: #4338ca;
+        font-weight: 700;
+    }
+
+
+/* Login button */
+
+#modalLogin #formLogin button[type="submit"] {
+    min-height: 46px;
+    margin-top: 18px !important;
+    border-radius: 12px !important;
+    border: 0;
+    background: linear-gradient( 135deg, #4f46e5 0%, #4338ca 100% );
+    color: #fff;
+    font-size: 13px;
+    letter-spacing: 0.05px;
+    box-shadow: 0 8px 18px rgba(79, 70, 229, 0.22);
+    transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
+}
+
+    #modalLogin #formLogin button[type="submit"]:hover {
+        transform: translateY(-1px);
+        filter: brightness(1.03);
+        box-shadow: 0 11px 22px rgba(79, 70, 229, 0.28);
+    }
+
+    #modalLogin #formLogin button[type="submit"]:active {
+        transform: translateY(0);
+    }
+
+
+/* Quick accounts */
+
+#modalLogin .border-top {
+    margin-top: 22px !important;
+    padding-top: 18px !important;
+    border-color: #e2e8f0 !important;
+}
+
+    #modalLogin .border-top > .small {
+        margin-bottom: 11px !important;
+        color: #64748b !important;
+        font-size: 11px !important;
+    }
+
+    #modalLogin .border-top .d-flex {
+        gap: 7px !important;
+    }
+
+    #modalLogin .border-top .btn {
+        min-height: 32px;
+        padding: 6px 10px;
+        border-radius: 9px;
+        font-size: 11px;
+        font-weight: 600;
+        transition: transform 0.18s ease, box-shadow 0.18s ease, background-color 0.18s ease;
+    }
+
+        #modalLogin .border-top .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 10px rgba(15, 23, 42, 0.08);
+        }
+
+
+/* Modal background */
+
+#modalLogin.show {
+    background: rgba(15, 23, 42, 0.42);
+}
+
+#modalLogin .modal-content {
+    animation: loginModalIn 0.2s ease-out;
+}
+
+@keyframes loginModalIn {
+    from {
+        opacity: 0;
+        transform: translateY(8px) scale(0.985);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+
+/* Error / validation */
+
+#modalLogin .form-control:invalid:not(:placeholder-shown) {
+    box-shadow: none;
+}
+
+#modalLogin .form-control:focus {
+    outline: none;
+}
+
+
+/* Mobile */
+
+@media (max-width: 576px) {
+
+    #modalLogin .modal-dialog {
+        width: calc(100% - 16px);
+        margin: 8px auto;
+    }
+
+    #modalLogin .modal-body {
+        padding: 6px 20px 22px !important;
+    }
+
+        #modalLogin .modal-body > .text-center h4 {
+            font-size: 20px;
+        }
+
+    #modalLogin .sidebar-logo-icon {
+        width: 56px !important;
+        height: 56px !important;
+        font-size: 22px !important;
+    }
+
+    #modalLogin .border-top .d-flex {
+        gap: 6px !important;
+    }
+
+    #modalLogin .border-top .btn {
+        flex: 1 1 auto;
+    }
+}
+
+
+/* Accessibility */
+
+#modalLogin button:focus-visible,
+#modalLogin input:focus-visible {
+    outline: 3px solid rgba(79, 70, 229, 0.20);
+    outline-offset: 2px;
+}
