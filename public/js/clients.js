@@ -1,28 +1,40 @@
 ﻿/**
  * =========================================================
  * GODDY RECRUIT - Client Management Module
- * FE-19: Client List
+ * FE-19 / FE-20
  * =========================================================
  *
- * Giữ nguyên chức năng hiện có:
+ * FE-19:
  * - Load danh sách khách hàng
- * - Tìm kiếm
- * - Thêm khách hàng
+ * - Tìm kiếm tên / MST / người liên hệ
+ * - Loading / Empty / Error state
  * - Xuất CSV
  *
- * FE-19 cải thiện:
+ * FE-20:
+ * - Dùng lại modal hiện có để Thêm / Sửa khách hàng
+ * - Tự chuyển tiêu đề modal theo chế độ
+ * - Tự thêm cột Thao tác vào bảng
+ * - Chỉnh sửa dữ liệu khách hàng
+ * - Xác nhận trước khi cập nhật
+ * - Loading button khi submit
  * - Ưu tiên GoddyAPI
- * - Loading state
- * - Error state
- * - Empty state
- * - Đếm số lượng kết quả
- * - Escape dữ liệu HTML
- * - Giữ nguyên contract /api/clients
+ *
+ * Giữ nguyên:
+ * - clients.html hiện tại
+ * - Endpoint /api/clients
+ * - Các field backend hiện có
  * =========================================================
  */
 
 (function (window) {
     'use strict';
+
+
+    // =======================================================
+    // STATE
+    // =======================================================
+
+    let editingClientId = null;
 
 
     // =======================================================
@@ -58,12 +70,16 @@
     }
 
 
-    function ensureGlobalClients() {
-        if (!Array.isArray(window.globalClients)) {
-            window.globalClients = [];
+    function getClientsState() {
+
+        if (
+            typeof globalClients !== 'undefined' &&
+            Array.isArray(globalClients)
+        ) {
+            return globalClients;
         }
 
-        return window.globalClients;
+        return [];
     }
 
 
@@ -78,6 +94,7 @@
                 'clientsTableBody'
             );
 
+
         if (!tableBody) {
             return;
         }
@@ -88,6 +105,7 @@
                 'table'
             );
 
+
         if (!table) {
             return;
         }
@@ -97,6 +115,7 @@
             table.closest(
                 '.table-box'
             );
+
 
         if (!tableBox) {
             return;
@@ -122,7 +141,7 @@
 
 
             countElement.className =
-                'ui-data-count';
+                'ui-data-count ms-2';
 
 
             const boxHeader =
@@ -165,7 +184,7 @@
 
 
     // =======================================================
-    // ERROR STATE
+    // ERROR
     // =======================================================
 
     function clearClientError() {
@@ -174,6 +193,7 @@
             getElement(
                 'clientErrorAlert'
             );
+
 
         if (existing) {
             existing.remove();
@@ -285,7 +305,7 @@
         tbody.innerHTML = `
       <tr>
         <td
-          colspan="6"
+          colspan="7"
           class="text-center py-5"
         >
           <div class="ui-loading">
@@ -329,7 +349,7 @@
         tbody.innerHTML = `
       <tr>
         <td
-          colspan="6"
+          colspan="7"
           class="text-center text-muted py-5"
         >
           <div class="ui-empty">
@@ -360,6 +380,90 @@
 
 
     // =======================================================
+    // TABLE ACTION HEADER
+    // =======================================================
+
+    function ensureClientsActionColumn() {
+
+        const tbody =
+            getElement(
+                'clientsTableBody'
+            );
+
+
+        if (!tbody) {
+            return;
+        }
+
+
+        const table =
+            tbody.closest(
+                'table'
+            );
+
+
+        if (!table) {
+            return;
+        }
+
+
+        const headerRow =
+            table.querySelector(
+                'thead tr'
+            );
+
+
+        if (!headerRow) {
+            return;
+        }
+
+
+        const headers =
+            Array.from(
+                headerRow.querySelectorAll(
+                    'th'
+                )
+            );
+
+
+        const exists =
+            headers.some(
+                function (header) {
+
+                    return normalize(
+                        header.textContent
+                    ) === 'thao tác';
+
+                }
+            );
+
+
+        if (!exists) {
+
+            const th =
+                document.createElement(
+                    'th'
+                );
+
+
+            th.className =
+                'text-end';
+
+
+            th.textContent =
+                'Thao Tác';
+
+
+            headerRow.appendChild(
+                th
+            );
+
+        }
+
+    }
+
+
+    // =======================================================
     // RENDER TABLE
     // =======================================================
 
@@ -378,6 +482,9 @@
         }
 
 
+        ensureClientsActionColumn();
+
+
         const items =
             Array.isArray(clients)
                 ? clients
@@ -394,146 +501,167 @@
 
         tbody.innerHTML =
             items
-                .map(function (client) {
+                .map(
+                    function (client) {
 
-                    const companyName =
-                        safeText(
-                            client?.companyName
-                        );
-
-
-                    const address =
-                        safeText(
-                            client?.address,
-                            'Chưa cập nhật'
-                        );
+                        const clientId =
+                            Number(
+                                client?.id
+                            );
 
 
-                    const taxCode =
-                        safeText(
-                            client?.taxCode
-                        );
+                        const companyName =
+                            safeText(
+                                client?.companyName
+                            );
 
 
-                    const contactPerson =
-                        safeText(
-                            client?.contactPerson
-                        );
+                        const address =
+                            safeText(
+                                client?.address,
+                                'Chưa cập nhật'
+                            );
 
 
-                    const email =
-                        safeText(
-                            client?.contactEmail
-                        );
+                        const taxCode =
+                            safeText(
+                                client?.taxCode
+                            );
 
 
-                    const phone =
-                        safeText(
-                            client?.contactPhone,
-                            ''
-                        );
+                        const contactPerson =
+                            safeText(
+                                client?.contactPerson
+                            );
 
 
-                    const paymentDays =
-                        safeText(
-                            client?.paymentTermDays,
-                            '30'
-                        );
+                        const email =
+                            safeText(
+                                client?.contactEmail
+                            );
 
 
-                    const status =
-                        safeText(
-                            client?.status,
-                            'Active'
-                        );
+                        const phone =
+                            safeText(
+                                client?.contactPhone,
+                                ''
+                            );
 
 
-                    const statusClass =
-                        normalize(status) === 'active'
-                            ? 'badge-paid'
-                            : 'badge-sent';
+                        const paymentDays =
+                            safeText(
+                                client?.paymentTermDays,
+                                '30'
+                            );
 
 
-                    return `
-            <tr>
-
-              <td>
-                <strong>
-                  ${escapeHtml(
-                        companyName
-                    )}
-                </strong>
-
-                <br>
-
-                <small class="text-muted">
-                  ${escapeHtml(
-                        address
-                    )}
-                </small>
-              </td>
+                        const status =
+                            safeText(
+                                client?.status,
+                                'Active'
+                            );
 
 
-              <td>
-                <code>
-                  ${escapeHtml(
-                        taxCode
-                    )}
-                </code>
-              </td>
+                        const statusClass =
+                            normalize(status) === 'active'
+                                ? 'badge-paid'
+                                : 'badge-sent';
 
 
-              <td>
-                ${escapeHtml(
-                        contactPerson
-                    )}
-              </td>
+                        return `
+              <tr>
 
-
-              <td>
-                <small>
-                  ${escapeHtml(
-                        email
-                    )}
-                </small>
-
-                ${phone
-                            ? `
-                      <br>
-                      <small class="text-muted">
-                        ${escapeHtml(
-                                phone
-                            )}
-                      </small>
-                    `
-                            : ''
-                        }
-              </td>
-
-
-              <td>
-                <span class="badge bg-secondary">
-                  Net ${escapeHtml(
-                            paymentDays
-                        )} ngày
-                </span>
-              </td>
-
-
-              <td>
-                <span
-                  class="status-badge ${statusClass}"
-                >
-                  ${escapeHtml(
-                            status
+                <td>
+                  <strong>
+                    ${escapeHtml(
+                            companyName
                         )}
-                </span>
-              </td>
+                  </strong>
 
-            </tr>
-          `;
+                  <br>
 
-                })
+                  <small class="text-muted">
+                    ${escapeHtml(
+                            address
+                        )}
+                  </small>
+                </td>
+
+
+                <td>
+                  <code>
+                    ${escapeHtml(
+                            taxCode
+                        )}
+                  </code>
+                </td>
+
+
+                <td>
+                  ${escapeHtml(
+                            contactPerson
+                        )}
+                </td>
+
+
+                <td>
+                  <small>
+                    ${escapeHtml(
+                            email
+                        )}
+                  </small>
+
+                  ${phone
+                                ? `
+                        <br>
+
+                        <small class="text-muted">
+                          ${escapeHtml(
+                                    phone
+                                )}
+                        </small>
+                      `
+                                : ''
+                            }
+                </td>
+
+
+                <td>
+                  <span class="badge bg-secondary">
+                    Net ${escapeHtml(
+                                paymentDays
+                            )} ngày
+                  </span>
+                </td>
+
+
+                <td>
+                  <span
+                    class="status-badge ${statusClass}"
+                  >
+                    ${escapeHtml(
+                                status
+                            )}
+                  </span>
+                </td>
+
+
+                <td class="text-end">
+                  <button
+                    type="button"
+                    class="ui-icon-btn primary"
+                    title="Chỉnh sửa khách hàng"
+                    onclick="openEditClient(${clientId})"
+                  >
+                    <i class="fa-solid fa-pen"></i>
+                  </button>
+                </td>
+
+              </tr>
+            `;
+
+                    }
+                )
                 .join('');
 
 
@@ -551,7 +679,7 @@
     function filterClientsTable() {
 
         const clients =
-            ensureGlobalClients();
+            getClientsState();
 
 
         const input =
@@ -634,10 +762,21 @@
 
 
     // =======================================================
-    // API
+    // API - GET CLIENTS
     // =======================================================
 
     async function getClients() {
+
+        if (
+            window.GoddyAPI?.clients &&
+            typeof window.GoddyAPI.clients.list ===
+            'function'
+        ) {
+
+            return await window.GoddyAPI.clients.list();
+
+        }
+
 
         if (
             window.GoddyAPI &&
@@ -680,7 +819,6 @@
 
         clearClientError();
 
-
         renderClientLoading();
 
 
@@ -690,7 +828,7 @@
                 await getClients();
 
 
-            window.globalClients =
+            const clients =
                 Array.isArray(
                     data?.clients
                 )
@@ -698,8 +836,18 @@
                     : [];
 
 
+            if (
+                typeof globalClients !== 'undefined'
+            ) {
+
+                globalClients =
+                    clients;
+
+            }
+
+
             renderClientsTable(
-                window.globalClients
+                clients
             );
 
 
@@ -707,7 +855,7 @@
                 'Client list loaded successfully.',
                 {
                     count:
-                        window.globalClients.length
+                        clients.length
                 }
             );
 
@@ -720,8 +868,14 @@
             );
 
 
-            window.globalClients =
-                [];
+            if (
+                typeof globalClients !== 'undefined'
+            ) {
+
+                globalClients =
+                    [];
+
+            }
 
 
             renderClientEmpty(
@@ -740,7 +894,116 @@
 
 
     // =======================================================
-    // ADD CLIENT MODAL
+    // MODAL MODE
+    // =======================================================
+
+    function setClientModalMode(
+        mode,
+        client = null
+    ) {
+
+        const modalEl =
+            getElement(
+                'modalAddClient'
+            );
+
+
+        if (!modalEl) {
+            return;
+        }
+
+
+        const title =
+            modalEl.querySelector(
+                '.modal-title'
+            );
+
+
+        const submitButton =
+            modalEl.querySelector(
+                'button[type="submit"]'
+            );
+
+
+        const icon =
+            title?.querySelector(
+                'i'
+            );
+
+
+        if (mode === 'edit') {
+
+            editingClientId =
+                Number(
+                    client?.id
+                );
+
+
+            if (icon) {
+
+                icon.className =
+                    'fa-solid fa-pen me-2 text-primary';
+
+            }
+
+
+            if (title) {
+
+                title.lastChild.textContent =
+                    'Chỉnh Sửa Khách Hàng Doanh Nghiệp';
+
+            }
+
+
+            if (submitButton) {
+
+                submitButton.innerHTML = `
+          <i class="fa-solid fa-save me-1"></i>
+          Lưu Thay Đổi
+        `;
+
+            }
+
+
+            return;
+
+        }
+
+
+        editingClientId =
+            null;
+
+
+        if (icon) {
+
+            icon.className =
+                'fa-solid fa-building me-2 text-primary';
+
+        }
+
+
+        if (title) {
+
+            title.lastChild.textContent =
+                'Thêm Khách Hàng Doanh Nghiệp Mới';
+
+        }
+
+
+        if (submitButton) {
+
+            submitButton.innerHTML = `
+        <i class="fa-solid fa-save me-1"></i>
+        Lưu Khách Hàng
+      `;
+
+        }
+
+    }
+
+
+    // =======================================================
+    // OPEN ADD
     // =======================================================
 
     function openModalAddClient() {
@@ -756,6 +1019,11 @@
         }
 
 
+        setClientModalMode(
+            'create'
+        );
+
+
         const modalEl =
             getElement(
                 'modalAddClient'
@@ -764,8 +1032,7 @@
 
         if (
             modalEl &&
-            window.bootstrap &&
-            window.bootstrap.Modal
+            window.bootstrap?.Modal
         ) {
 
             const modal =
@@ -790,7 +1057,197 @@
 
 
     // =======================================================
-    // ADD CLIENT
+    // OPEN EDIT
+    // =======================================================
+
+    function openEditClient(
+        clientId
+    ) {
+
+        const id =
+            Number(
+                clientId
+            );
+
+
+        const clients =
+            getClientsState();
+
+
+        const client =
+            clients.find(
+                function (item) {
+
+                    return Number(
+                        item?.id
+                    ) === id;
+
+                }
+            );
+
+
+        if (!client) {
+
+            alert(
+                'Không tìm thấy khách hàng cần chỉnh sửa.'
+            );
+
+            return;
+        }
+
+
+        const mappings = {
+
+            newClientName:
+                client?.companyName ||
+                '',
+
+            newClientTaxCode:
+                client?.taxCode ||
+                '',
+
+            newClientNetDays:
+                client?.paymentTermDays ??
+                '30',
+
+            newClientAddress:
+                client?.address ||
+                '',
+
+            newClientContactPerson:
+                client?.contactPerson ||
+                '',
+
+            newClientContactPhone:
+                client?.contactPhone ||
+                '',
+
+            newClientContactEmail:
+                client?.contactEmail ||
+                ''
+
+        };
+
+
+        Object.keys(
+            mappings
+        )
+            .forEach(
+                function (fieldId) {
+
+                    const element =
+                        getElement(
+                            fieldId
+                        );
+
+
+                    if (element) {
+
+                        element.value =
+                            mappings[fieldId];
+
+                    }
+
+                }
+            );
+
+
+        setClientModalMode(
+            'edit',
+            client
+        );
+
+
+        const modalEl =
+            getElement(
+                'modalAddClient'
+            );
+
+
+        if (
+            modalEl &&
+            window.bootstrap?.Modal
+        ) {
+
+            const modal =
+                window.bootstrap.Modal
+                    .getOrCreateInstance(
+                        modalEl
+                    );
+
+
+            modal.show();
+
+        }
+
+    }
+
+
+    // =======================================================
+    // FORM BODY
+    // =======================================================
+
+    function collectClientFormData() {
+
+        function valueOf(id) {
+
+            const element =
+                getElement(
+                    id
+                );
+
+
+            return element
+                ? element.value.trim()
+                : '';
+
+        }
+
+
+        return {
+
+            companyName:
+                valueOf(
+                    'newClientName'
+                ),
+
+            taxCode:
+                valueOf(
+                    'newClientTaxCode'
+                ),
+
+            paymentTermDays:
+                valueOf(
+                    'newClientNetDays'
+                ),
+
+            address:
+                valueOf(
+                    'newClientAddress'
+                ),
+
+            contactPerson:
+                valueOf(
+                    'newClientContactPerson'
+                ),
+
+            contactPhone:
+                valueOf(
+                    'newClientContactPhone'
+                ),
+
+            contactEmail:
+                valueOf(
+                    'newClientContactEmail'
+                )
+
+        };
+
+    }
+
+
+    // =======================================================
+    // SUBMIT CREATE / EDIT
     // =======================================================
 
     async function submitAddClient(e) {
@@ -798,60 +1255,8 @@
         e.preventDefault();
 
 
-        const getValue =
-            function (id) {
-
-                const element =
-                    getElement(
-                        id
-                    );
-
-
-                return element
-                    ? element.value.trim()
-                    : '';
-
-            };
-
-
-        const body = {
-
-            companyName:
-                getValue(
-                    'newClientName'
-                ),
-
-            taxCode:
-                getValue(
-                    'newClientTaxCode'
-                ),
-
-            paymentTermDays:
-                getValue(
-                    'newClientNetDays'
-                ),
-
-            address:
-                getValue(
-                    'newClientAddress'
-                ),
-
-            contactPerson:
-                getValue(
-                    'newClientContactPerson'
-                ),
-
-            contactPhone:
-                getValue(
-                    'newClientContactPhone'
-                ),
-
-            contactEmail:
-                getValue(
-                    'newClientContactEmail'
-                )
-
-        };
+        const body =
+            collectClientFormData();
 
 
         if (!body.companyName) {
@@ -874,12 +1279,195 @@
         }
 
 
+        const submitButton =
+            e.submitter ||
+            getElement(
+                'formAddClient'
+            )?.querySelector(
+                'button[type="submit"]'
+            );
+
+
+        const originalHtml =
+            submitButton
+                ? submitButton.innerHTML
+                : '';
+
+
+        if (submitButton) {
+
+            submitButton.disabled =
+                true;
+
+
+            submitButton.innerHTML = `
+        <span
+          class="spinner-border spinner-border-sm me-1"
+          role="status"
+          aria-hidden="true"
+        ></span>
+
+        ${editingClientId
+                    ? 'Đang lưu...'
+                    : 'Đang tạo...'
+                }
+      `;
+
+        }
+
+
         try {
 
             let data;
 
 
+            // ---------------------------------------------------
+            // UPDATE
+            // ---------------------------------------------------
+
+            if (editingClientId) {
+
+                const confirmed =
+                    window.confirm(
+                        'Bạn có chắc muốn lưu thay đổi khách hàng này không?'
+                    );
+
+
+                if (!confirmed) {
+                    return;
+                }
+
+
+                if (
+                    window.GoddyAPI?.clients &&
+                    typeof window.GoddyAPI.clients.update ===
+                    'function'
+                ) {
+
+                    data =
+                        await window.GoddyAPI.clients.update(
+                            editingClientId,
+                            body
+                        );
+
+                } else if (
+                    window.GoddyAPI &&
+                    typeof window.GoddyAPI.put ===
+                    'function'
+                ) {
+
+                    data =
+                        await window.GoddyAPI.put(
+                            `/clients/${editingClientId}`,
+                            body
+                        );
+
+                } else {
+
+                    const response =
+                        await fetch(
+                            `/api/clients/${editingClientId}`,
+                            {
+                                method:
+                                    'PUT',
+
+                                headers: {
+                                    'Content-Type':
+                                        'application/json'
+                                },
+
+                                body:
+                                    JSON.stringify(
+                                        body
+                                    )
+
+                            }
+                        );
+
+
+                    if (!response.ok) {
+
+                        throw new Error(
+                            `HTTP ${response.status}: ${response.statusText}`
+                        );
+
+                    }
+
+
+                    data =
+                        await response.json();
+
+                }
+
+
+                if (
+                    data?.success === false
+                ) {
+
+                    throw new Error(
+                        data?.message ||
+                        'Không thể cập nhật khách hàng.'
+                    );
+
+                }
+
+
+                const modalEl =
+                    getElement(
+                        'modalAddClient'
+                    );
+
+
+                if (modalEl) {
+
+                    const modal =
+                        window.bootstrap?.Modal
+                            .getInstance(
+                                modalEl
+                            );
+
+
+                    if (modal) {
+                        modal.hide();
+                    }
+
+                }
+
+
+                alert(
+                    data?.message ||
+                    'Cập nhật khách hàng thành công!'
+                );
+
+
+                editingClientId =
+                    null;
+
+
+                await loadClients();
+
+
+                return;
+
+            }
+
+
+            // ---------------------------------------------------
+            // CREATE
+            // ---------------------------------------------------
+
             if (
+                window.GoddyAPI?.clients &&
+                typeof window.GoddyAPI.clients.create ===
+                'function'
+            ) {
+
+                data =
+                    await window.GoddyAPI.clients.create(
+                        body
+                    );
+
+            } else if (
                 window.GoddyAPI &&
                 typeof window.GoddyAPI.post ===
                 'function'
@@ -906,7 +1494,10 @@
                             },
 
                             body:
-                                JSON.stringify(body)
+                                JSON.stringify(
+                                    body
+                                )
+
                         }
                     );
 
@@ -926,52 +1517,55 @@
             }
 
 
-            if (data?.success) {
+            if (
+                data?.success === false
+            ) {
 
-                const modalEl =
-                    getElement(
-                        'modalAddClient'
-                    );
+                throw new Error(
+                    data?.message ||
+                    'Không thể tạo khách hàng.'
+                );
 
-
-                if (modalEl) {
-
-                    const modal =
-                        window.bootstrap?.Modal
-                            .getInstance(
-                                modalEl
-                            );
+            }
 
 
-                    if (modal) {
-                        modal.hide();
-                    }
-
-                }
-
-
-                alert(
-                    'Thêm khách hàng doanh nghiệp thành công!'
+            const modalEl =
+                getElement(
+                    'modalAddClient'
                 );
 
 
-                await loadClients();
+            if (modalEl) {
+
+                const modal =
+                    window.bootstrap?.Modal
+                        .getInstance(
+                            modalEl
+                        );
 
 
-                return;
+                if (modal) {
+                    modal.hide();
+                }
+
             }
 
 
             alert(
                 data?.message ||
-                'Có lỗi xảy ra khi thêm khách hàng.'
+                'Thêm khách hàng doanh nghiệp thành công!'
             );
+
+
+            await loadClients();
 
 
         } catch (error) {
 
             console.error(
-                'Lỗi thêm khách hàng:',
+                editingClientId
+                    ? 'Lỗi cập nhật khách hàng:'
+                    : 'Lỗi thêm khách hàng:',
                 error
             );
 
@@ -980,6 +1574,23 @@
                 error?.message ||
                 'Lỗi kết nối máy chủ!'
             );
+
+
+        } finally {
+
+            if (submitButton) {
+
+                submitButton.disabled =
+                    false;
+
+                submitButton.innerHTML =
+                    originalHtml ||
+                    `
+            <i class="fa-solid fa-save me-1"></i>
+            Lưu Khách Hàng
+          `;
+
+            }
 
         }
 
@@ -993,7 +1604,7 @@
     function exportClientsCSV() {
 
         const clients =
-            ensureGlobalClients();
+            getClientsState();
 
 
         if (
@@ -1103,6 +1714,7 @@
         link.href =
             url;
 
+
         link.download =
             'Danh_Sach_Khach_Hang_B2B.csv';
 
@@ -1126,7 +1738,7 @@
 
 
     // =======================================================
-    // GLOBAL EXPORTS
+    // EXPORT GLOBAL FUNCTIONS
     // =======================================================
 
     window.loadClients =
@@ -1143,6 +1755,10 @@
 
     window.openModalAddClient =
         openModalAddClient;
+
+
+    window.openEditClient =
+        openEditClient;
 
 
     window.submitAddClient =
