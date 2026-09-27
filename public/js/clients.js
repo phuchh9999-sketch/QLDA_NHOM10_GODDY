@@ -1,7 +1,7 @@
 ﻿/**
  * =========================================================
  * GODDY RECRUIT - Client Management Module
- * FE-19 / FE-20
+ * FE-19 / FE-20 / FE-21
  * =========================================================
  *
  * FE-19:
@@ -11,18 +11,22 @@
  * - Xuất CSV
  *
  * FE-20:
- * - Dùng lại modal hiện có để Thêm / Sửa khách hàng
- * - Tự chuyển tiêu đề modal theo chế độ
- * - Tự thêm cột Thao tác vào bảng
- * - Chỉnh sửa dữ liệu khách hàng
- * - Xác nhận trước khi cập nhật
- * - Loading button khi submit
- * - Ưu tiên GoddyAPI
+ * - Dùng modal hiện có để Thêm / Sửa khách hàng
+ * - Tự đổi tiêu đề modal
+ * - Chỉnh sửa khách hàng
+ * - Loading button
+ * - GoddyAPI
+ *
+ * FE-21:
+ * - Xem chi tiết khách hàng
+ * - Modal chi tiết tạo động
+ * - Không thay đổi clients.html
+ * - Hiển thị thông tin doanh nghiệp đầy đủ
  *
  * Giữ nguyên:
- * - clients.html hiện tại
  * - Endpoint /api/clients
- * - Các field backend hiện có
+ * - Field backend hiện tại
+ * - Chức năng thêm / sửa / tìm kiếm / CSV
  * =========================================================
  */
 
@@ -57,7 +61,8 @@
 
 
     function safeText(value, fallback = '-') {
-        const text = String(value ?? '').trim();
+        const text =
+            String(value ?? '').trim();
 
         return text || fallback;
     }
@@ -353,6 +358,7 @@
           class="text-center text-muted py-5"
         >
           <div class="ui-empty">
+
             <div class="ui-empty-icon">
               <i class="fa-solid fa-building"></i>
             </div>
@@ -366,6 +372,7 @@
             <div class="ui-empty-text">
               Chưa có dữ liệu doanh nghiệp để hiển thị.
             </div>
+
           </div>
         </td>
       </tr>
@@ -380,7 +387,7 @@
 
 
     // =======================================================
-    // TABLE ACTION HEADER
+    // ACTION COLUMN
     // =======================================================
 
     function ensureClientsActionColumn() {
@@ -464,7 +471,574 @@
 
 
     // =======================================================
-    // RENDER TABLE
+    // FE-21 - DETAIL MODAL
+    // =======================================================
+
+    function ensureClientDetailModal() {
+
+        let modal =
+            getElement(
+                'modalClientDetail'
+            );
+
+
+        if (modal) {
+            return modal;
+        }
+
+
+        modal =
+            document.createElement(
+                'div'
+            );
+
+
+        modal.id =
+            'modalClientDetail';
+
+
+        modal.className =
+            'modal fade';
+
+
+        modal.tabIndex =
+            -1;
+
+
+        modal.setAttribute(
+            'aria-hidden',
+            'true'
+        );
+
+
+        modal.innerHTML = `
+      <div
+        class="modal-dialog modal-lg modal-dialog-centered"
+      >
+
+        <div class="modal-content border-0 shadow-lg">
+
+          <div class="modal-header">
+
+            <div>
+
+              <div
+                class="text-muted small text-uppercase fw-bold mb-1"
+              >
+                Hồ sơ khách hàng doanh nghiệp
+              </div>
+
+              <h5
+                class="modal-title"
+                id="clientDetailTitle"
+              >
+                Chi tiết khách hàng
+              </h5>
+
+            </div>
+
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Đóng"
+            ></button>
+
+          </div>
+
+
+          <div
+            class="modal-body"
+            id="clientDetailBody"
+          ></div>
+
+
+          <div class="modal-footer">
+
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-bs-dismiss="modal"
+            >
+              Đóng
+            </button>
+
+            <button
+              type="button"
+              class="btn btn-primary"
+              id="clientDetailEditButton"
+            >
+              <i class="fa-solid fa-pen me-1"></i>
+              Chỉnh Sửa
+            </button>
+
+          </div>
+
+        </div>
+
+      </div>
+    `;
+
+
+        document.body.appendChild(
+            modal
+        );
+
+
+        return modal;
+
+    }
+
+
+    function showClientDetail(
+        client
+    ) {
+
+        if (!client) {
+
+            alert(
+                'Không tìm thấy thông tin khách hàng.'
+            );
+
+            return;
+
+        }
+
+
+        const modalEl =
+            ensureClientDetailModal();
+
+
+        const titleEl =
+            getElement(
+                'clientDetailTitle'
+            );
+
+
+        const bodyEl =
+            getElement(
+                'clientDetailBody'
+            );
+
+
+        const editButton =
+            getElement(
+                'clientDetailEditButton'
+            );
+
+
+        if (
+            !modalEl ||
+            !bodyEl
+        ) {
+            return;
+        }
+
+
+        const companyName =
+            safeText(
+                client?.companyName
+            );
+
+
+        const taxCode =
+            safeText(
+                client?.taxCode
+            );
+
+
+        const address =
+            safeText(
+                client?.address,
+                'Chưa cập nhật'
+            );
+
+
+        const contactPerson =
+            safeText(
+                client?.contactPerson,
+                'Chưa cập nhật'
+            );
+
+
+        const contactPhone =
+            safeText(
+                client?.contactPhone,
+                'Chưa cập nhật'
+            );
+
+
+        const contactEmail =
+            safeText(
+                client?.contactEmail,
+                'Chưa cập nhật'
+            );
+
+
+        const paymentTermDays =
+            safeText(
+                client?.paymentTermDays,
+                '30'
+            );
+
+
+        const status =
+            safeText(
+                client?.status,
+                'Active'
+            );
+
+
+        const statusClass =
+            normalize(status) === 'active'
+                ? 'bg-success'
+                : 'bg-secondary';
+
+
+        if (titleEl) {
+
+            titleEl.textContent =
+                companyName;
+
+        }
+
+
+        bodyEl.innerHTML = `
+
+      <div class="row g-3">
+
+        <div class="col-12">
+
+          <div
+            class="client-hero-card"
+            style="margin-bottom: 0;"
+          >
+
+            <div
+              class="position-relative"
+              style="z-index: 1;"
+            >
+
+              <div
+                class="small text-white-50 mb-1"
+              >
+                DOANH NGHIỆP B2B
+              </div>
+
+              <div
+                class="fs-4 fw-bold"
+              >
+                ${escapeHtml(
+            companyName
+        )}
+              </div>
+
+              <div
+                class="small mt-2"
+              >
+                Mã số thuế:
+                <strong>
+                  ${escapeHtml(
+            taxCode
+        )}
+                </strong>
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <div class="col-md-6">
+
+          <div class="ui-card h-100">
+
+            <div
+              class="ui-card-subtitle"
+            >
+              Thông tin doanh nghiệp
+            </div>
+
+            <div class="mt-3 small">
+
+              <div class="mb-3">
+
+                <div class="text-muted mb-1">
+                  Tên doanh nghiệp
+                </div>
+
+                <strong>
+                  ${escapeHtml(
+            companyName
+        )}
+                </strong>
+
+              </div>
+
+
+              <div class="mb-3">
+
+                <div class="text-muted mb-1">
+                  Mã số thuế
+                </div>
+
+                <code>
+                  ${escapeHtml(
+            taxCode
+        )}
+                </code>
+
+              </div>
+
+
+              <div>
+
+                <div class="text-muted mb-1">
+                  Địa chỉ trụ sở
+                </div>
+
+                <span>
+                  ${escapeHtml(
+            address
+        )}
+                </span>
+
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <div class="col-md-6">
+
+          <div class="ui-card h-100">
+
+            <div
+              class="ui-card-subtitle"
+            >
+              Điều khoản & trạng thái
+            </div>
+
+            <div class="mt-3">
+
+              <div class="mb-3">
+
+                <div class="text-muted small mb-1">
+                  Hạn thanh toán
+                </div>
+
+                <span
+                  class="badge bg-secondary"
+                >
+                  Net ${escapeHtml(
+            paymentTermDays
+        )} ngày
+                </span>
+
+              </div>
+
+
+              <div>
+
+                <div class="text-muted small mb-1">
+                  Trạng thái
+                </div>
+
+                <span
+                  class="badge ${statusClass}"
+                >
+                  ${escapeHtml(
+            status
+        )}
+                </span>
+
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <div class="col-12">
+
+          <div class="ui-card">
+
+            <div
+              class="ui-card-subtitle"
+            >
+              Người liên hệ
+            </div>
+
+            <div
+              class="row g-3 mt-1"
+            >
+
+              <div class="col-md-4">
+
+                <div
+                  class="text-muted small mb-1"
+                >
+                  Họ và tên
+                </div>
+
+                <strong>
+                  ${escapeHtml(
+            contactPerson
+        )}
+                </strong>
+
+              </div>
+
+
+              <div class="col-md-4">
+
+                <div
+                  class="text-muted small mb-1"
+                >
+                  Số điện thoại
+                </div>
+
+                <span>
+                  ${escapeHtml(
+            contactPhone
+        )}
+                </span>
+
+              </div>
+
+
+              <div class="col-md-4">
+
+                <div
+                  class="text-muted small mb-1"
+                >
+                  Email
+                </div>
+
+                <span>
+                  ${escapeHtml(
+            contactEmail
+        )}
+                </span>
+
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    `;
+
+
+        if (editButton) {
+
+            editButton.onclick =
+                function () {
+
+                    const modal =
+                        window.bootstrap?.Modal
+                            .getInstance(
+                                modalEl
+                            );
+
+
+                    if (modal) {
+                        modal.hide();
+                    }
+
+
+                    setTimeout(
+                        function () {
+
+                            openEditClient(
+                                client.id
+                            );
+
+                        },
+                        180
+                    );
+
+                };
+
+        }
+
+
+        if (
+            window.bootstrap &&
+            window.bootstrap.Modal
+        ) {
+
+            const modal =
+                window.bootstrap.Modal
+                    .getOrCreateInstance(
+                        modalEl
+                    );
+
+
+            modal.show();
+
+        }
+
+    }
+
+
+    function openClientDetail(
+        clientId
+    ) {
+
+        const id =
+            Number(
+                clientId
+            );
+
+
+        const clients =
+            getClientsState();
+
+
+        const client =
+            clients.find(
+                function (item) {
+
+                    return Number(
+                        item?.id
+                    ) === id;
+
+                }
+            );
+
+
+        if (!client) {
+
+            alert(
+                'Không tìm thấy khách hàng cần xem.'
+            );
+
+            return;
+
+        }
+
+
+        showClientDetail(
+            client
+        );
+
+    }
+
+
+    // =======================================================
+    // TABLE
     // =======================================================
 
     function renderClientsTable(
@@ -486,7 +1060,9 @@
 
 
         const items =
-            Array.isArray(clients)
+            Array.isArray(
+                clients
+            )
                 ? clients
                 : [];
 
@@ -496,6 +1072,7 @@
             renderClientEmpty();
 
             return;
+
         }
 
 
@@ -572,6 +1149,7 @@
               <tr>
 
                 <td>
+
                   <strong>
                     ${escapeHtml(
                             companyName
@@ -585,15 +1163,18 @@
                             address
                         )}
                   </small>
+
                 </td>
 
 
                 <td>
+
                   <code>
                     ${escapeHtml(
                             taxCode
                         )}
                   </code>
+
                 </td>
 
 
@@ -605,6 +1186,7 @@
 
 
                 <td>
+
                   <small>
                     ${escapeHtml(
                             email
@@ -623,19 +1205,25 @@
                       `
                                 : ''
                             }
+
                 </td>
 
 
                 <td>
-                  <span class="badge bg-secondary">
+
+                  <span
+                    class="badge bg-secondary"
+                  >
                     Net ${escapeHtml(
                                 paymentDays
                             )} ngày
                   </span>
+
                 </td>
 
 
                 <td>
+
                   <span
                     class="status-badge ${statusClass}"
                   >
@@ -643,18 +1231,41 @@
                                 status
                             )}
                   </span>
+
                 </td>
 
 
                 <td class="text-end">
-                  <button
-                    type="button"
-                    class="ui-icon-btn primary"
-                    title="Chỉnh sửa khách hàng"
-                    onclick="openEditClient(${clientId})"
+
+                  <div
+                    class="d-flex gap-1 justify-content-end"
                   >
-                    <i class="fa-solid fa-pen"></i>
-                  </button>
+
+                    <button
+                      type="button"
+                      class="ui-icon-btn primary"
+                      title="Xem chi tiết khách hàng"
+                      onclick="openClientDetail(${clientId})"
+                    >
+                      <i
+                        class="fa-solid fa-eye"
+                      ></i>
+                    </button>
+
+
+                    <button
+                      type="button"
+                      class="ui-icon-btn"
+                      title="Chỉnh sửa khách hàng"
+                      onclick="openEditClient(${clientId})"
+                    >
+                      <i
+                        class="fa-solid fa-pen"
+                      ></i>
+                    </button>
+
+                  </div>
+
                 </td>
 
               </tr>
@@ -703,6 +1314,7 @@
             );
 
             return;
+
         }
 
 
@@ -751,6 +1363,7 @@
             );
 
             return;
+
         }
 
 
@@ -762,7 +1375,7 @@
 
 
     // =======================================================
-    // API - GET CLIENTS
+    // API
     // =======================================================
 
     async function getClients() {
@@ -837,7 +1450,8 @@
 
 
             if (
-                typeof globalClients !== 'undefined'
+                typeof globalClients !==
+                'undefined'
             ) {
 
                 globalClients =
@@ -869,7 +1483,8 @@
 
 
             if (
-                typeof globalClients !== 'undefined'
+                typeof globalClients !==
+                'undefined'
             ) {
 
                 globalClients =
@@ -894,7 +1509,7 @@
 
 
     // =======================================================
-    // MODAL MODE
+    // CREATE / EDIT MODAL MODE
     // =======================================================
 
     function setClientModalMode(
@@ -1046,6 +1661,7 @@
 
 
             return;
+
         }
 
 
@@ -1093,6 +1709,7 @@
             );
 
             return;
+
         }
 
 
@@ -1184,7 +1801,7 @@
 
 
     // =======================================================
-    // FORM BODY
+    // FORM DATA
     // =======================================================
 
     function collectClientFormData() {
@@ -1266,6 +1883,7 @@
             );
 
             return;
+
         }
 
 
@@ -1276,6 +1894,7 @@
             );
 
             return;
+
         }
 
 
@@ -1321,9 +1940,9 @@
             let data;
 
 
-            // ---------------------------------------------------
+            // ===================================================
             // UPDATE
-            // ---------------------------------------------------
+            // ===================================================
 
             if (editingClientId) {
 
@@ -1380,7 +1999,6 @@
                                     JSON.stringify(
                                         body
                                     )
-
                             }
                         );
 
@@ -1452,9 +2070,9 @@
             }
 
 
-            // ---------------------------------------------------
+            // ===================================================
             // CREATE
-            // ---------------------------------------------------
+            // ===================================================
 
             if (
                 window.GoddyAPI?.clients &&
@@ -1497,7 +2115,6 @@
                                 JSON.stringify(
                                     body
                                 )
-
                         }
                     );
 
@@ -1583,6 +2200,7 @@
                 submitButton.disabled =
                     false;
 
+
                 submitButton.innerHTML =
                     originalHtml ||
                     `
@@ -1598,7 +2216,7 @@
 
 
     // =======================================================
-    // EXPORT CSV
+    // CSV
     // =======================================================
 
     function exportClientsCSV() {
@@ -1617,6 +2235,7 @@
             );
 
             return;
+
         }
 
 
@@ -1683,6 +2302,7 @@
             );
 
             return;
+
         }
 
 
@@ -1738,7 +2358,7 @@
 
 
     // =======================================================
-    // EXPORT GLOBAL FUNCTIONS
+    // GLOBAL EXPORTS
     // =======================================================
 
     window.loadClients =
@@ -1759,6 +2379,14 @@
 
     window.openEditClient =
         openEditClient;
+
+
+    window.openClientDetail =
+        openClientDetail;
+
+
+    window.showClientDetail =
+        showClientDetail;
 
 
     window.submitAddClient =
