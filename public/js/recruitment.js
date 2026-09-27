@@ -1,44 +1,45 @@
 /**
  * =========================================================
  * GODDY RECRUIT - Recruitment & Placement Module
- * FE-27 / FE-28 / FE-29
+ * FE-27 / FE-28 / FE-29 / FE-30
  * =========================================================
  *
  * FE-27:
  * - Dashboard tuyển dụng tổng quan
- * - Tổng vị trí tuyển dụng
- * - Vị trí đang mở
- * - Tổng ứng viên
- * - Tổng deal onboard
- * - Deal đang bảo hành
- * - Tổng phí dịch vụ
+ * - KPI vị trí / ứng viên / deal
  * - Biểu đồ trạng thái vị trí
  * - Biểu đồ trạng thái deal
  *
  * FE-28:
- * - Quản lý danh sách vị trí tuyển dụng
- * - Tìm kiếm vị trí / phòng ban
- * - Lọc trạng thái vị trí
- * - Đếm số kết quả
+ * - Quản lý vị trí tuyển dụng
+ * - Tìm kiếm / lọc vị trí
  * - Thêm vị trí tuyển dụng
  *
  * FE-29:
- * - Quản lý danh sách ứng viên
- * - Tìm kiếm họ tên / email / vị trí
- * - Lọc trạng thái ứng viên
- * - Đếm số kết quả
+ * - Quản lý ứng viên
+ * - Tìm kiếm / lọc ứng viên
  * - Xem chi tiết ứng viên
- * - Empty / Loading / Error state
  *
- * Dữ liệu sử dụng đúng các API hiện có:
+ * FE-30:
+ * - Recruitment Pipeline
+ * - 6 giai đoạn chính:
+ *   Nhận ứng viên
+ *   Sàng lọc
+ *   Phỏng vấn
+ *   Offer
+ *   Nhận việc
+ *   Loại
+ * - Tự gom ứng viên theo status thực tế từ API
+ * - Không tạo API mới
+ *
+ * API sử dụng đúng các API đang có:
  * - /api/recruitment/jobs
  * - /api/recruitment/candidates
  * - /api/recruitment/placements
  * - /api/clients
+ * - /api/recruitment/jobs (POST)
  * - /api/recruitment/placements (POST)
  * - /api/invoices/from-placement (POST)
- *
- * Không sửa recruitment.html.
  * =========================================================
  */
 
@@ -67,6 +68,94 @@
     let currentCandidateSearch = '';
 
     let currentCandidateStatus = 'All';
+
+
+    // =======================================================
+    // PIPELINE STAGES
+    // =======================================================
+
+    const PIPELINE_STAGES = [
+        {
+            key: 'received',
+            title: 'Nhận ứng viên',
+            icon: 'fa-user-plus',
+            aliases: [
+                'new',
+                'received',
+                'applied',
+                'application',
+                'candidate',
+                'moi',
+                'nhan'
+            ]
+        },
+
+        {
+            key: 'screening',
+            title: 'Sàng lọc',
+            icon: 'fa-filter',
+            aliases: [
+                'screening',
+                'screen',
+                'shortlisted',
+                'shortlist',
+                'sang loc',
+                'sangloc'
+            ]
+        },
+
+        {
+            key: 'interview',
+            title: 'Phỏng vấn',
+            icon: 'fa-comments',
+            aliases: [
+                'interview',
+                'interviewing',
+                'phong van',
+                'phongvan'
+            ]
+        },
+
+        {
+            key: 'offer',
+            title: 'Offer',
+            icon: 'fa-file-signature',
+            aliases: [
+                'offer',
+                'offered',
+                'offering'
+            ]
+        },
+
+        {
+            key: 'hired',
+            title: 'Nhận việc',
+            icon: 'fa-user-check',
+            aliases: [
+                'hired',
+                'accepted',
+                'accept',
+                'onboard',
+                'onboarded',
+                'nhan viec',
+                'nhanviec'
+            ]
+        },
+
+        {
+            key: 'rejected',
+            title: 'Loại',
+            icon: 'fa-user-xmark',
+            aliases: [
+                'rejected',
+                'reject',
+                'declined',
+                'failed',
+                'loai',
+                'loai bo'
+            ]
+        }
+    ];
 
 
     // =======================================================
@@ -103,6 +192,20 @@
     }
 
 
+    function normalize(value) {
+
+        return String(value ?? '')
+            .toLowerCase()
+            .trim()
+            .normalize('NFD')
+            .replace(
+                /[\u0300-\u036f]/g,
+                ''
+            );
+
+    }
+
+
     function escapeHtml(value) {
 
         return String(value ?? '')
@@ -111,15 +214,6 @@
             .replace(/>/g, '&gt;')
             .replace(/"/g, '&quot;')
             .replace(/'/g, '&#039;');
-
-    }
-
-
-    function normalize(value) {
-
-        return String(value ?? '')
-            .toLowerCase()
-            .trim();
 
     }
 
@@ -149,7 +243,7 @@
 
 
     // =======================================================
-    // API HELPER
+    // API
     // =======================================================
 
     async function apiGet(endpoint) {
@@ -219,9 +313,7 @@
                     },
 
                     body:
-                        JSON.stringify(
-                            body
-                        )
+                        JSON.stringify(body)
                 }
             );
 
@@ -241,7 +333,7 @@
 
 
     // =======================================================
-    // FE-28 - POSITION MANAGEMENT UI
+    // FE-28 - POSITION MANAGEMENT
     // =======================================================
 
     function ensurePositionManagement() {
@@ -301,7 +393,7 @@
           <div
             class="text-muted small mt-1"
           >
-            Quản lý các vị trí tuyển dụng theo doanh nghiệp,
+            Quản lý vị trí tuyển dụng theo doanh nghiệp,
             phòng ban và trạng thái
           </div>
 
@@ -355,10 +447,13 @@
             <span
               class="input-group-text bg-white"
             >
+
               <i
                 class="fa-solid fa-magnifying-glass text-muted"
               ></i>
+
             </span>
+
 
             <input
               type="search"
@@ -366,7 +461,6 @@
               class="form-control"
               placeholder="Tìm vị trí / phòng ban..."
               autocomplete="off"
-              aria-label="Tìm vị trí tuyển dụng"
             >
 
           </div>
@@ -376,7 +470,6 @@
             id="positionStatusFilter"
             class="form-select"
             style="max-width: 220px;"
-            aria-label="Lọc trạng thái vị trí"
           >
 
             <option value="All">
@@ -432,37 +525,24 @@
 
             <tr>
 
-              <th>
-                #
-              </th>
+              <th>#</th>
 
-              <th>
-                Vị Trí
-              </th>
+              <th>Vị Trí</th>
 
-              <th>
-                Phòng Ban
-              </th>
+              <th>Phòng Ban</th>
 
-              <th>
-                Khách Hàng
-              </th>
+              <th>Khách Hàng</th>
 
-              <th>
-                Mức Lương
-              </th>
+              <th>Mức Lương</th>
 
-              <th>
-                Phí Dịch Vụ
-              </th>
+              <th>Phí Dịch Vụ</th>
 
-              <th>
-                Trạng Thái
-              </th>
+              <th>Trạng Thái</th>
 
             </tr>
 
           </thead>
+
 
           <tbody
             id="positionManagementTableBody"
@@ -475,17 +555,17 @@
     `;
 
 
-        const existingDashboard =
+        const dashboard =
             getElement(
                 'recruitmentDashboard'
             );
 
 
-        if (existingDashboard) {
+        if (dashboard) {
 
             section.insertBefore(
                 panel,
-                existingDashboard
+                dashboard
             );
 
         } else {
@@ -600,18 +680,14 @@
 
 
                     if (searchInput) {
-
                         searchInput.value =
                             '';
-
                     }
 
 
                     if (statusFilter) {
-
                         statusFilter.value =
                             'All';
-
                     }
 
 
@@ -631,8 +707,1099 @@
     }
 
 
+    function renderPositionResultCount(
+        count
+    ) {
+
+        const element =
+            getElement(
+                'positionResultCount'
+            );
+
+
+        if (element) {
+
+            element.textContent =
+                `${count} vị trí`;
+
+        }
+
+    }
+
+
+    function renderPositionLoading() {
+
+        const tbody =
+            getElement(
+                'positionManagementTableBody'
+            );
+
+
+        if (!tbody) {
+            return;
+        }
+
+
+        tbody.innerHTML = `
+      <tr>
+
+        <td
+          colspan="7"
+          class="text-center py-5"
+        >
+
+          <div class="ui-loading">
+
+            <div
+              class="ui-spinner"
+            ></div>
+
+            <div>
+              Đang tải danh sách vị trí...
+            </div>
+
+          </div>
+
+        </td>
+
+      </tr>
+    `;
+
+
+        renderPositionResultCount(
+            0
+        );
+
+    }
+
+
+    function renderPositionEmpty(
+        message
+    ) {
+
+        const tbody =
+            getElement(
+                'positionManagementTableBody'
+            );
+
+
+        if (!tbody) {
+            return;
+        }
+
+
+        tbody.innerHTML = `
+      <tr>
+
+        <td
+          colspan="7"
+          class="text-center text-muted py-5"
+        >
+
+          <div
+            class="ui-empty"
+          >
+
+            <div
+              class="ui-empty-icon"
+            >
+              <i
+                class="fa-solid fa-briefcase"
+              ></i>
+            </div>
+
+            <div
+              class="ui-empty-title"
+            >
+              ${escapeHtml(
+            message
+        )}
+            </div>
+
+            <div
+              class="ui-empty-text"
+            >
+              Chưa có dữ liệu vị trí để hiển thị.
+            </div>
+
+          </div>
+
+        </td>
+
+      </tr>
+    `;
+
+
+        renderPositionResultCount(
+            0
+        );
+
+    }
+
+
+    function renderPositionTable(
+        jobs
+    ) {
+
+        const tbody =
+            getElement(
+                'positionManagementTableBody'
+            );
+
+
+        if (!tbody) {
+            return;
+        }
+
+
+        const items =
+            Array.isArray(jobs)
+                ? jobs
+                : [];
+
+
+        if (
+            items.length ===
+            0
+        ) {
+
+            renderPositionEmpty(
+                currentJobSearch ||
+                    currentJobStatus !== 'All'
+                    ? 'Không tìm thấy vị trí phù hợp.'
+                    : 'Chưa có vị trí tuyển dụng nào.'
+            );
+
+            return;
+
+        }
+
+
+        tbody.innerHTML =
+            items
+                .map(
+                    function (job) {
+
+                        const status =
+                            safeText(
+                                job?.status
+                            );
+
+
+                        const isOpening =
+                            normalize(
+                                status
+                            ) ===
+                            'opening';
+
+
+                        return `
+
+              <tr>
+
+                <td>
+                  <span
+                    class="badge bg-light text-dark border"
+                  >
+                    #${safeNumber(
+                            job?.id
+                        )}
+                  </span>
+                </td>
+
+
+                <td>
+
+                  <strong>
+                    ${escapeHtml(
+                            safeText(
+                                job?.title
+                            )
+                        )}
+                  </strong>
+
+                </td>
+
+
+                <td>
+                  ${escapeHtml(
+                            safeText(
+                                job?.department,
+                                'Chưa cập nhật'
+                            )
+                        )}
+                </td>
+
+
+                <td>
+                  ${escapeHtml(
+                            job?.Client
+                                ?.companyName ||
+                            '-'
+                        )}
+                </td>
+
+
+                <td>
+                  ${escapeHtml(
+                            safeText(
+                                job?.salaryRange,
+                                'Thỏa thuận'
+                            )
+                        )}
+                </td>
+
+
+                <td>
+
+                  <span
+                    class="badge bg-light text-success border"
+                  >
+                    ${safeNumber(
+                            job?.feeRatePercent
+                        )}%
+                  </span>
+
+                </td>
+
+
+                <td>
+
+                  <span
+                    class="badge ${isOpening
+                                ? 'bg-success'
+                                : 'bg-secondary'
+                            }"
+                  >
+                    ${isOpening
+                                ? 'Đang tuyển'
+                                : 'Đã đóng'
+                            }
+                  </span>
+
+                </td>
+
+              </tr>
+
+            `;
+
+                    }
+                )
+                .join('');
+
+
+        renderPositionResultCount(
+            items.length
+        );
+
+    }
+
+
+    function getFilteredPositions() {
+
+        const search =
+            normalize(
+                currentJobSearch
+            );
+
+
+        return recruitmentJobs.filter(
+            function (job) {
+
+                const title =
+                    normalize(
+                        job?.title
+                    );
+
+
+                const department =
+                    normalize(
+                        job?.department
+                    );
+
+
+                const status =
+                    safeText(
+                        job?.status,
+                        ''
+                    );
+
+
+                return (
+                    (
+                        !search ||
+                        title.includes(
+                            search
+                        ) ||
+                        department.includes(
+                            search
+                        )
+                    ) &&
+                    (
+                        currentJobStatus ===
+                        'All' ||
+                        status ===
+                        currentJobStatus
+                    )
+                );
+
+            }
+        );
+
+    }
+
+
+    function applyPositionFilters() {
+
+        renderPositionTable(
+            getFilteredPositions()
+        );
+
+    }
+
+
     // =======================================================
-    // FE-29 - CANDIDATE MANAGEMENT UI
+    // FE-28 - JOB MODAL
+    // =======================================================
+
+    function ensureRecruitmentJobModal() {
+
+        let modal =
+            getElement(
+                'modalAddRecruitmentJob'
+            );
+
+
+        if (modal) {
+            return modal;
+        }
+
+
+        modal =
+            document.createElement(
+                'div'
+            );
+
+
+        modal.id =
+            'modalAddRecruitmentJob';
+
+
+        modal.className =
+            'modal fade';
+
+
+        modal.tabIndex =
+            -1;
+
+
+        modal.setAttribute(
+            'aria-hidden',
+            'true'
+        );
+
+
+        modal.innerHTML = `
+
+      <div
+        class="modal-dialog modal-dialog-centered"
+      >
+
+        <div
+          class="modal-content border-0 shadow-lg"
+        >
+
+          <div
+            class="modal-header"
+          >
+
+            <div>
+
+              <div
+                class="text-muted small text-uppercase fw-bold"
+              >
+                Quản lý vị trí
+              </div>
+
+              <h5
+                class="modal-title"
+              >
+
+                <i
+                  class="fa-solid fa-briefcase me-2 text-primary"
+                ></i>
+
+                Thêm Vị Trí Tuyển Dụng
+
+              </h5>
+
+            </div>
+
+
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Đóng"
+            ></button>
+
+          </div>
+
+
+          <form
+            id="formAddRecruitmentJob"
+          >
+
+            <div
+              class="modal-body"
+            >
+
+              <div
+                id="recruitmentJobFormError"
+                class="mb-3"
+                style="display:none;"
+              ></div>
+
+
+              <div
+                class="mb-3"
+              >
+
+                <label
+                  class="form-label fw-bold"
+                >
+                  Khách hàng *
+                </label>
+
+                <select
+                  id="recruitmentJobClientId"
+                  class="form-select"
+                  required
+                >
+
+                  <option value="">
+                    -- Chọn khách hàng --
+                  </option>
+
+                </select>
+
+              </div>
+
+
+              <div
+                class="mb-3"
+              >
+
+                <label
+                  class="form-label fw-bold"
+                >
+                  Vị trí tuyển dụng *
+                </label>
+
+                <input
+                  type="text"
+                  id="recruitmentJobTitle"
+                  class="form-control"
+                  placeholder="Ví dụ: Senior Data Engineer"
+                  maxlength="150"
+                  required
+                >
+
+              </div>
+
+
+              <div
+                class="mb-3"
+              >
+
+                <label
+                  class="form-label fw-bold"
+                >
+                  Phòng ban *
+                </label>
+
+                <input
+                  type="text"
+                  id="recruitmentJobDepartment"
+                  class="form-control"
+                  placeholder="Ví dụ: Công nghệ thông tin"
+                  maxlength="120"
+                  required
+                >
+
+              </div>
+
+
+              <div
+                class="row g-3"
+              >
+
+                <div
+                  class="col-md-8"
+                >
+
+                  <label
+                    class="form-label fw-bold"
+                  >
+                    Dải lương
+                  </label>
+
+                  <input
+                    type="text"
+                    id="recruitmentJobSalary"
+                    class="form-control"
+                    placeholder="30 - 45 triệu VND"
+                  >
+
+                </div>
+
+
+                <div
+                  class="col-md-4"
+                >
+
+                  <label
+                    class="form-label fw-bold"
+                  >
+                    Phí (%)
+                  </label>
+
+                  <input
+                    type="number"
+                    id="recruitmentJobFeeRate"
+                    class="form-control"
+                    value="18"
+                    min="0"
+                    max="100"
+                    step="0.1"
+                  >
+
+                </div>
+
+              </div>
+
+
+              <div
+                class="ui-alert ui-alert-info mt-3"
+              >
+
+                <i
+                  class="fa-solid fa-circle-info"
+                ></i>
+
+                <div>
+                  Vị trí mới sẽ ở trạng thái
+                  <strong>Đang tuyển</strong>.
+                </div>
+
+              </div>
+
+            </div>
+
+
+            <div
+              class="modal-footer"
+            >
+
+              <button
+                type="button"
+                class="btn btn-secondary"
+                data-bs-dismiss="modal"
+              >
+                Đóng
+              </button>
+
+
+              <button
+                type="submit"
+                class="btn btn-primary"
+              >
+
+                <i
+                  class="fa-solid fa-save me-1"
+                ></i>
+
+                Lưu Vị Trí
+
+              </button>
+
+            </div>
+
+          </form>
+
+        </div>
+
+      </div>
+
+    `;
+
+
+        document.body.appendChild(
+            modal
+        );
+
+
+        const form =
+            getElement(
+                'formAddRecruitmentJob'
+            );
+
+
+        if (form) {
+
+            form.addEventListener(
+                'submit',
+                submitRecruitmentJob
+            );
+
+        }
+
+
+        return modal;
+
+    }
+
+
+    function clearRecruitmentJobFormError() {
+
+        const element =
+            getElement(
+                'recruitmentJobFormError'
+            );
+
+
+        if (!element) {
+            return;
+        }
+
+
+        element.style.display =
+            'none';
+
+
+        element.innerHTML =
+            '';
+
+    }
+
+
+    function showRecruitmentJobFormError(
+        message
+    ) {
+
+        const element =
+            getElement(
+                'recruitmentJobFormError'
+            );
+
+
+        if (!element) {
+            return;
+        }
+
+
+        element.style.display =
+            'block';
+
+
+        element.innerHTML = `
+      <div
+        class="ui-alert ui-alert-danger"
+      >
+
+        <i
+          class="fa-solid fa-circle-exclamation"
+        ></i>
+
+        <div>
+          ${escapeHtml(
+            message
+        )}
+        </div>
+
+      </div>
+    `;
+
+    }
+
+
+    async function loadClientsForRecruitmentJob() {
+
+        const select =
+            getElement(
+                'recruitmentJobClientId'
+            );
+
+
+        if (!select) {
+            return;
+        }
+
+
+        select.innerHTML = `
+      <option value="">
+        -- Đang tải khách hàng... --
+      </option>
+    `;
+
+
+        try {
+
+            const data =
+                await apiGet(
+                    '/clients'
+                );
+
+
+            const clients =
+                Array.isArray(
+                    data?.clients
+                )
+                    ? data.clients
+                    : [];
+
+
+            select.innerHTML = `
+        <option value="">
+          -- Chọn khách hàng --
+        </option>
+      `;
+
+
+            clients.forEach(
+                function (client) {
+
+                    const option =
+                        document.createElement(
+                            'option'
+                        );
+
+
+                    option.value =
+                        client.id;
+
+
+                    option.textContent =
+                        safeText(
+                            client.companyName
+                        );
+
+
+                    select.appendChild(
+                        option
+                    );
+
+                }
+            );
+
+
+        } catch (error) {
+
+            console.error(
+                'Lỗi tải khách hàng cho vị trí:',
+                error
+            );
+
+
+            select.innerHTML = `
+        <option value="">
+          (Không thể tải khách hàng)
+        </option>
+      `;
+
+        }
+
+    }
+
+
+    async function openRecruitmentJobModal() {
+
+        const modal =
+            ensureRecruitmentJobModal();
+
+
+        const form =
+            getElement(
+                'formAddRecruitmentJob'
+            );
+
+
+        if (form) {
+            form.reset();
+        }
+
+
+        const feeRate =
+            getElement(
+                'recruitmentJobFeeRate'
+            );
+
+
+        if (feeRate) {
+            feeRate.value =
+                '18';
+        }
+
+
+        clearRecruitmentJobFormError();
+
+
+        await loadClientsForRecruitmentJob();
+
+
+        if (
+            modal &&
+            window.bootstrap?.Modal
+        ) {
+
+            window.bootstrap.Modal
+                .getOrCreateInstance(
+                    modal
+                )
+                .show();
+
+        }
+
+    }
+
+
+    async function submitRecruitmentJob(
+        event
+    ) {
+
+        event.preventDefault();
+
+
+        clearRecruitmentJobFormError();
+
+
+        function valueOf(id) {
+
+            const element =
+                getElement(id);
+
+
+            return element
+                ? element.value.trim()
+                : '';
+
+        }
+
+
+        const clientId =
+            valueOf(
+                'recruitmentJobClientId'
+            );
+
+
+        const title =
+            valueOf(
+                'recruitmentJobTitle'
+            );
+
+
+        const department =
+            valueOf(
+                'recruitmentJobDepartment'
+            );
+
+
+        const salaryRange =
+            valueOf(
+                'recruitmentJobSalary'
+            );
+
+
+        const feeRate =
+            Number(
+                valueOf(
+                    'recruitmentJobFeeRate'
+                )
+            );
+
+
+        if (!clientId) {
+
+            showRecruitmentJobFormError(
+                'Vui lòng chọn khách hàng.'
+            );
+
+            return;
+
+        }
+
+
+        if (!title) {
+
+            showRecruitmentJobFormError(
+                'Vui lòng nhập vị trí tuyển dụng.'
+            );
+
+            return;
+
+        }
+
+
+        if (!department) {
+
+            showRecruitmentJobFormError(
+                'Vui lòng nhập phòng ban.'
+            );
+
+            return;
+
+        }
+
+
+        if (
+            !Number.isFinite(
+                feeRate
+            ) ||
+            feeRate < 0 ||
+            feeRate > 100
+        ) {
+
+            showRecruitmentJobFormError(
+                'Phí dịch vụ phải từ 0% đến 100%.'
+            );
+
+            return;
+
+        }
+
+
+        const button =
+            event.submitter;
+
+
+        const originalHtml =
+            button
+                ? button.innerHTML
+                : '';
+
+
+        if (button) {
+
+            button.disabled =
+                true;
+
+
+            button.innerHTML = `
+        <span
+          class="spinner-border spinner-border-sm me-1"
+        ></span>
+        Đang lưu...
+      `;
+
+        }
+
+
+        try {
+
+            const data =
+                await apiPost(
+                    '/recruitment/jobs',
+                    {
+                        clientId:
+                            clientId,
+
+                        title:
+                            title,
+
+                        department:
+                            department,
+
+                        salaryRange:
+                            salaryRange ||
+                            'Thỏa thuận',
+
+                        feeRatePercent:
+                            feeRate
+
+                    }
+                );
+
+
+            if (
+                data?.success ===
+                false
+            ) {
+
+                throw new Error(
+                    data?.message ||
+                    'Không thể tạo vị trí tuyển dụng.'
+                );
+
+            }
+
+
+            const modal =
+                getElement(
+                    'modalAddRecruitmentJob'
+                );
+
+
+            if (
+                modal &&
+                window.bootstrap?.Modal
+            ) {
+
+                window.bootstrap.Modal
+                    .getInstance(
+                        modal
+                    )
+                    ?.hide();
+
+            }
+
+
+            alert(
+                data?.message ||
+                'Tạo vị trí tuyển dụng thành công!'
+            );
+
+
+            await loadRecruitmentDashboard();
+
+        } catch (error) {
+
+            console.error(
+                'Lỗi tạo vị trí tuyển dụng:',
+                error
+            );
+
+
+            showRecruitmentJobFormError(
+                error?.message ||
+                'Lỗi kết nối máy chủ.'
+            );
+
+        } finally {
+
+            if (button) {
+
+                button.disabled =
+                    false;
+
+
+                button.innerHTML =
+                    originalHtml ||
+                    `
+            <i
+              class="fa-solid fa-save me-1"
+            ></i>
+            Lưu Vị Trí
+          `;
+
+            }
+
+        }
+
+    }
+
+
+    // =======================================================
+    // FE-29 - CANDIDATE MANAGEMENT
     // =======================================================
 
     function ensureCandidateManagement() {
@@ -697,24 +1864,18 @@
             class="text-muted small mt-1"
           >
             Tra cứu ứng viên theo họ tên, email,
-            vị trí hiện tại và trạng thái
+            vị trí và trạng thái
           </div>
 
         </div>
 
 
-        <div
-          class="d-flex gap-2 align-items-center flex-wrap"
+        <span
+          id="candidateResultCount"
+          class="ui-data-count"
         >
-
-          <span
-            id="candidateResultCount"
-            class="ui-data-count"
-          >
-            0 ứng viên
-          </span>
-
-        </div>
+          0 ứng viên
+        </span>
 
       </div>
 
@@ -729,19 +1890,16 @@
 
           <div
             class="input-group"
-            style="max-width: 380px;"
+            style="max-width:380px;"
           >
 
             <span
               class="input-group-text bg-white"
             >
-
               <i
                 class="fa-solid fa-magnifying-glass text-muted"
               ></i>
-
             </span>
-
 
             <input
               type="search"
@@ -749,7 +1907,6 @@
               class="form-control"
               placeholder="Tìm họ tên / email / vị trí..."
               autocomplete="off"
-              aria-label="Tìm ứng viên"
             >
 
           </div>
@@ -758,8 +1915,7 @@
           <select
             id="candidateStatusFilter"
             class="form-select"
-            style="max-width: 220px;"
-            aria-label="Lọc trạng thái ứng viên"
+            style="max-width:220px;"
           >
 
             <option value="All">
@@ -807,25 +1963,15 @@
 
             <tr>
 
-              <th>
-                #
-              </th>
+              <th>#</th>
 
-              <th>
-                Họ Tên
-              </th>
+              <th>Họ Tên</th>
 
-              <th>
-                Email
-              </th>
+              <th>Email</th>
 
-              <th>
-                Vị Trí Hiện Tại
-              </th>
+              <th>Vị Trí Hiện Tại</th>
 
-              <th>
-                Trạng Thái
-              </th>
+              <th>Trạng Thái</th>
 
               <th
                 class="text-end"
@@ -864,26 +2010,9 @@
 
         } else {
 
-            const firstTable =
-                section.querySelector(
-                    '.table-box'
-                );
-
-
-            if (firstTable) {
-
-                section.insertBefore(
-                    panel,
-                    firstTable
-                );
-
-            } else {
-
-                section.prepend(
-                    panel
-                );
-
-            }
+            section.prepend(
+                panel
+            );
 
         }
 
@@ -981,35 +2110,6 @@
     }
 
 
-    // =======================================================
-    // POSITION RESULT COUNT
-    // =======================================================
-
-    function renderPositionResultCount(
-        count
-    ) {
-
-        const element =
-            getElement(
-                'positionResultCount'
-            );
-
-
-        if (!element) {
-            return;
-        }
-
-
-        element.textContent =
-            `${count} vị trí`;
-
-    }
-
-
-    // =======================================================
-    // CANDIDATE RESULT COUNT
-    // =======================================================
-
     function renderCandidateResultCount(
         count
     ) {
@@ -1020,224 +2120,15 @@
             );
 
 
-        if (!element) {
-            return;
+        if (element) {
+
+            element.textContent =
+                `${count} ứng viên`;
+
         }
-
-
-        element.textContent =
-            `${count} ứng viên`;
 
     }
 
-
-    // =======================================================
-    // POSITION ERROR
-    // =======================================================
-
-    function clearPositionError() {
-
-        const element =
-            getElement(
-                'positionErrorAlert'
-            );
-
-
-        if (!element) {
-            return;
-        }
-
-
-        element.style.display =
-            'none';
-
-
-        element.innerHTML =
-            '';
-
-    }
-
-
-    function showPositionError(
-        message
-    ) {
-
-        const element =
-            getElement(
-                'positionErrorAlert'
-            );
-
-
-        if (!element) {
-            return;
-        }
-
-
-        element.style.display =
-            'block';
-
-
-        element.innerHTML = `
-      <div
-        class="ui-alert ui-alert-warning"
-      >
-
-        <i
-          class="fa-solid fa-circle-exclamation"
-        ></i>
-
-        <div>
-
-          <div class="fw-bold">
-            Không thể tải danh sách vị trí
-          </div>
-
-          <div class="small">
-            ${escapeHtml(
-            message ||
-            'Vui lòng kiểm tra kết nối tới máy chủ.'
-        )}
-          </div>
-
-        </div>
-
-      </div>
-    `;
-
-    }
-
-
-    // =======================================================
-    // CANDIDATE ERROR
-    // =======================================================
-
-    function clearCandidateError() {
-
-        const element =
-            getElement(
-                'candidateErrorAlert'
-            );
-
-
-        if (!element) {
-            return;
-        }
-
-
-        element.style.display =
-            'none';
-
-
-        element.innerHTML =
-            '';
-
-    }
-
-
-    function showCandidateError(
-        message
-    ) {
-
-        const element =
-            getElement(
-                'candidateErrorAlert'
-            );
-
-
-        if (!element) {
-            return;
-        }
-
-
-        element.style.display =
-            'block';
-
-
-        element.innerHTML = `
-      <div
-        class="ui-alert ui-alert-warning"
-      >
-
-        <i
-          class="fa-solid fa-circle-exclamation"
-        ></i>
-
-        <div>
-
-          <div class="fw-bold">
-            Không thể tải danh sách ứng viên
-          </div>
-
-          <div class="small">
-            ${escapeHtml(
-            message ||
-            'Vui lòng kiểm tra kết nối tới máy chủ.'
-        )}
-          </div>
-
-        </div>
-
-      </div>
-    `;
-
-    }
-
-
-    // =======================================================
-    // POSITION LOADING
-    // =======================================================
-
-    function renderPositionLoading() {
-
-        const tbody =
-            getElement(
-                'positionManagementTableBody'
-            );
-
-
-        if (!tbody) {
-            return;
-        }
-
-
-        tbody.innerHTML = `
-      <tr>
-
-        <td
-          colspan="7"
-          class="text-center py-5"
-        >
-
-          <div
-            class="ui-loading"
-          >
-
-            <div
-              class="ui-spinner"
-            ></div>
-
-            <div>
-              Đang tải danh sách vị trí...
-            </div>
-
-          </div>
-
-        </td>
-
-      </tr>
-    `;
-
-
-        renderPositionResultCount(
-            0
-        );
-
-    }
-
-
-    // =======================================================
-    // CANDIDATE LOADING
-    // =======================================================
 
     function renderCandidateLoading() {
 
@@ -1287,82 +2178,8 @@
     }
 
 
-    // =======================================================
-    // POSITION EMPTY
-    // =======================================================
-
-    function renderPositionEmpty(
-        message =
-            'Chưa có vị trí tuyển dụng nào.'
-    ) {
-
-        const tbody =
-            getElement(
-                'positionManagementTableBody'
-            );
-
-
-        if (!tbody) {
-            return;
-        }
-
-
-        tbody.innerHTML = `
-      <tr>
-
-        <td
-          colspan="7"
-          class="text-center text-muted py-5"
-        >
-
-          <div
-            class="ui-empty"
-          >
-
-            <div
-              class="ui-empty-icon"
-            >
-              <i
-                class="fa-solid fa-briefcase"
-              ></i>
-            </div>
-
-            <div
-              class="ui-empty-title"
-            >
-              ${escapeHtml(
-            message
-        )}
-            </div>
-
-            <div
-              class="ui-empty-text"
-            >
-              Chưa có dữ liệu vị trí để hiển thị.
-            </div>
-
-          </div>
-
-        </td>
-
-      </tr>
-    `;
-
-
-        renderPositionResultCount(
-            0
-        );
-
-    }
-
-
-    // =======================================================
-    // CANDIDATE EMPTY
-    // =======================================================
-
     function renderCandidateEmpty(
-        message =
-            'Chưa có ứng viên nào.'
+        message
     ) {
 
         const tbody =
@@ -1391,10 +2208,13 @@
             <div
               class="ui-empty-icon"
             >
+
               <i
                 class="fa-solid fa-user-group"
               ></i>
+
             </div>
+
 
             <div
               class="ui-empty-title"
@@ -1403,6 +2223,7 @@
             message
         )}
             </div>
+
 
             <div
               class="ui-empty-text"
@@ -1425,182 +2246,6 @@
     }
 
 
-    // =======================================================
-    // POSITION TABLE
-    // =======================================================
-
-    function renderPositionTable(
-        jobs
-    ) {
-
-        const tbody =
-            getElement(
-                'positionManagementTableBody'
-            );
-
-
-        if (!tbody) {
-            return;
-        }
-
-
-        const items =
-            Array.isArray(jobs)
-                ? jobs
-                : [];
-
-
-        if (
-            items.length ===
-            0
-        ) {
-
-            renderPositionEmpty(
-                currentJobSearch ||
-                    currentJobStatus !== 'All'
-                    ? 'Không tìm thấy vị trí phù hợp.'
-                    : 'Chưa có vị trí tuyển dụng nào.'
-            );
-
-            return;
-
-        }
-
-
-        tbody.innerHTML =
-            items
-                .map(
-                    function (job) {
-
-                        const id =
-                            safeNumber(
-                                job?.id
-                            );
-
-
-                        const status =
-                            safeText(
-                                job?.status
-                            );
-
-
-                        const isOpening =
-                            normalize(
-                                status
-                            ) ===
-                            'opening';
-
-
-                        const statusClass =
-                            isOpening
-                                ? 'bg-success'
-                                : 'bg-secondary';
-
-
-                        const statusText =
-                            isOpening
-                                ? 'Đang tuyển'
-                                : 'Đã đóng';
-
-
-                        return `
-
-              <tr>
-
-                <td>
-                  <span
-                    class="badge bg-light text-dark border"
-                  >
-                    #${id}
-                  </span>
-                </td>
-
-
-                <td>
-
-                  <strong>
-                    ${escapeHtml(
-                            safeText(
-                                job?.title
-                            )
-                        )}
-                  </strong>
-
-                </td>
-
-
-                <td>
-                  ${escapeHtml(
-                            safeText(
-                                job?.department,
-                                'Chưa cập nhật'
-                            )
-                        )}
-                </td>
-
-
-                <td>
-                  ${escapeHtml(
-                            job?.Client
-                                ?.companyName ||
-                            '-'
-                        )}
-                </td>
-
-
-                <td>
-                  ${escapeHtml(
-                            safeText(
-                                job?.salaryRange,
-                                'Thỏa thuận'
-                            )
-                        )}
-                </td>
-
-
-                <td>
-
-                  <span
-                    class="badge bg-light text-success border"
-                  >
-                    ${safeNumber(
-                            job?.feeRatePercent
-                        )}%
-                  </span>
-
-                </td>
-
-
-                <td>
-
-                  <span
-                    class="badge ${statusClass}"
-                  >
-                    ${statusText}
-                  </span>
-
-                </td>
-
-              </tr>
-
-            `;
-
-                    }
-                )
-                .join('');
-
-
-        renderPositionResultCount(
-            items.length
-        );
-
-    }
-
-
-    // =======================================================
-    // CANDIDATE STATUS OPTIONS
-    // =======================================================
-
     function populateCandidateStatusFilter() {
 
         const select =
@@ -1614,27 +2259,27 @@
         }
 
 
-        const currentValue =
-            currentCandidateStatus;
-
-
         const statuses =
             Array.from(
                 new Set(
                     recruitmentCandidates
                         .map(
                             function (candidate) {
+
                                 return safeText(
                                     candidate?.status,
                                     ''
                                 );
+
                             }
                         )
                         .filter(
                             function (status) {
+
                                 return Boolean(
                                     status
                                 );
+
                             }
                         )
                 )
@@ -1673,35 +2318,29 @@
         );
 
 
-        const stillExists =
-            statuses.includes(
-                currentValue
-            );
-
-
-        select.value =
-            currentValue === 'All' ||
-                stillExists
-                ? currentValue
-                : 'All';
-
-
         if (
-            !stillExists &&
-            currentValue !== 'All'
+            currentCandidateStatus !==
+            'All' &&
+            statuses.includes(
+                currentCandidateStatus
+            )
         ) {
 
+            select.value =
+                currentCandidateStatus;
+
+        } else {
+
             currentCandidateStatus =
+                'All';
+
+            select.value =
                 'All';
 
         }
 
     }
 
-
-    // =======================================================
-    // CANDIDATE TABLE
-    // =======================================================
 
     function renderCandidateTable(
         candidates
@@ -1733,7 +2372,8 @@
 
             renderCandidateEmpty(
                 currentCandidateSearch ||
-                    currentCandidateStatus !== 'All'
+                    currentCandidateStatus !==
+                    'All'
                     ? 'Không tìm thấy ứng viên phù hợp.'
                     : 'Chưa có ứng viên nào.'
             );
@@ -1748,32 +2388,6 @@
                 .map(
                     function (candidate) {
 
-                        const id =
-                            safeNumber(
-                                candidate?.id
-                            );
-
-
-                        const fullName =
-                            safeText(
-                                candidate?.fullName
-                            );
-
-
-                        const email =
-                            safeText(
-                                candidate?.email,
-                                'Chưa cập nhật'
-                            );
-
-
-                        const currentPosition =
-                            safeText(
-                                candidate?.currentPosition,
-                                'Chưa cập nhật'
-                            );
-
-
                         const status =
                             safeText(
                                 candidate?.status,
@@ -1781,23 +2395,26 @@
                             );
 
 
-                        const isActive =
-                            [
-                                'active',
-                                'opening',
-                                'available',
-                                'new'
-                            ].includes(
-                                normalize(
-                                    status
-                                )
+                        const normalizedStatus =
+                            normalize(
+                                status
                             );
 
 
-                        const statusClass =
-                            isActive
-                                ? 'bg-success'
-                                : 'bg-secondary';
+                        const active =
+                            [
+                                'new',
+                                'received',
+                                'applied',
+                                'screening',
+                                'interview',
+                                'offer',
+                                'hired',
+                                'accepted',
+                                'onboard'
+                            ].includes(
+                                normalizedStatus
+                            );
 
 
                         return `
@@ -1805,13 +2422,13 @@
               <tr>
 
                 <td>
-
                   <span
                     class="badge bg-light text-dark border"
                   >
-                    #${id}
+                    #${safeNumber(
+                            candidate?.id
+                        )}
                   </span>
-
                 </td>
 
 
@@ -1819,7 +2436,9 @@
 
                   <strong>
                     ${escapeHtml(
-                            fullName
+                            safeText(
+                                candidate?.fullName
+                            )
                         )}
                   </strong>
 
@@ -1830,7 +2449,10 @@
 
                   <small>
                     ${escapeHtml(
-                            email
+                            safeText(
+                                candidate?.email,
+                                'Chưa cập nhật'
+                            )
                         )}
                   </small>
 
@@ -1839,7 +2461,10 @@
 
                 <td>
                   ${escapeHtml(
-                            currentPosition
+                            safeText(
+                                candidate?.currentPosition,
+                                'Chưa cập nhật'
+                            )
                         )}
                 </td>
 
@@ -1847,11 +2472,14 @@
                 <td>
 
                   <span
-                    class="badge ${statusClass}"
+                    class="badge ${active
+                                ? 'bg-success'
+                                : 'bg-secondary'
+                            }"
                   >
                     ${escapeHtml(
-                            status
-                        )}
+                                status
+                            )}
                   </span>
 
                 </td>
@@ -1864,8 +2492,9 @@
                   <button
                     type="button"
                     class="btn btn-sm btn-outline-primary"
-                    title="Xem chi tiết ứng viên"
-                    onclick="openCandidateDetail(${id})"
+                    onclick="openCandidateDetail(${safeNumber(
+                                candidate?.id
+                            )})"
                   >
 
                     <i
@@ -1894,84 +2523,6 @@
     }
 
 
-    // =======================================================
-    // POSITION FILTER
-    // =======================================================
-
-    function getFilteredPositions() {
-
-        const search =
-            normalize(
-                currentJobSearch
-            );
-
-
-        return recruitmentJobs.filter(
-            function (job) {
-
-                const title =
-                    normalize(
-                        job?.title
-                    );
-
-
-                const department =
-                    normalize(
-                        job?.department
-                    );
-
-
-                const status =
-                    safeText(
-                        job?.status,
-                        ''
-                    );
-
-
-                const searchMatched =
-                    !search ||
-                    title.includes(
-                        search
-                    ) ||
-                    department.includes(
-                        search
-                    );
-
-
-                const statusMatched =
-                    currentJobStatus === 'All' ||
-                    status ===
-                    currentJobStatus;
-
-
-                return (
-                    searchMatched &&
-                    statusMatched
-                );
-
-            }
-        );
-
-    }
-
-
-    function applyPositionFilters() {
-
-        const filtered =
-            getFilteredPositions();
-
-
-        renderPositionTable(
-            filtered
-        );
-
-    }
-
-
-    // =======================================================
-    // CANDIDATE FILTER
-    // =======================================================
-
     function getFilteredCandidates() {
 
         const search =
@@ -1995,7 +2546,7 @@
                     );
 
 
-                const currentPosition =
+                const position =
                     normalize(
                         candidate?.currentPosition
                     );
@@ -2016,13 +2567,14 @@
                     email.includes(
                         search
                     ) ||
-                    currentPosition.includes(
+                    position.includes(
                         search
                     );
 
 
                 const statusMatched =
-                    currentCandidateStatus === 'All' ||
+                    currentCandidateStatus ===
+                    'All' ||
                     status ===
                     currentCandidateStatus;
 
@@ -2040,19 +2592,15 @@
 
     function applyCandidateFilters() {
 
-        const filtered =
-            getFilteredCandidates();
-
-
         renderCandidateTable(
-            filtered
+            getFilteredCandidates()
         );
 
     }
 
 
     // =======================================================
-    // FE-29 - CANDIDATE DETAIL MODAL
+    // FE-29 - CANDIDATE DETAIL
     // =======================================================
 
     function ensureCandidateDetailModal() {
@@ -2185,9 +2733,12 @@
             recruitmentCandidates.find(
                 function (item) {
 
-                    return safeNumber(
-                        item?.id
-                    ) === id;
+                    return (
+                        safeNumber(
+                            item?.id
+                        ) ===
+                        id
+                    );
 
                 }
             );
@@ -2204,44 +2755,19 @@
         }
 
 
-        const modalEl =
+        const modal =
             ensureCandidateDetailModal();
 
 
-        const titleEl =
+        const title =
             getElement(
                 'candidateDetailTitle'
             );
 
 
-        const bodyEl =
+        const body =
             getElement(
                 'candidateDetailBody'
-            );
-
-
-        if (!bodyEl) {
-            return;
-        }
-
-
-        const fullName =
-            safeText(
-                candidate?.fullName
-            );
-
-
-        const email =
-            safeText(
-                candidate?.email,
-                'Chưa cập nhật'
-            );
-
-
-        const currentPosition =
-            safeText(
-                candidate?.currentPosition,
-                'Chưa cập nhật'
             );
 
 
@@ -2252,85 +2778,72 @@
             );
 
 
-        const statusClass =
-            [
-                'active',
-                'opening',
-                'available',
-                'new'
-            ].includes(
-                normalize(
-                    status
-                )
-            )
-                ? 'bg-success'
-                : 'bg-secondary';
+        if (title) {
 
-
-        if (titleEl) {
-
-            titleEl.textContent =
-                fullName;
+            title.textContent =
+                safeText(
+                    candidate?.fullName
+                );
 
         }
 
 
-        bodyEl.innerHTML = `
+        if (body) {
 
-      <div
-        class="row g-3"
-      >
+            body.innerHTML = `
 
         <div
-          class="col-12"
+          class="row g-3"
         >
 
           <div
-            class="ui-card"
+            class="col-12"
           >
 
             <div
-              class="d-flex align-items-center gap-3"
+              class="ui-card"
             >
 
               <div
-                class="rounded-circle bg-info-subtle text-info d-flex align-items-center justify-content-center"
-                style="width:64px;height:64px;"
+                class="d-flex align-items-center gap-3"
               >
 
-                <i
-                  class="fa-solid fa-user fa-xl"
-                ></i>
-
-              </div>
-
-
-              <div>
-
                 <div
-                  class="text-muted small"
+                  class="rounded-circle bg-info-subtle text-info d-flex align-items-center justify-content-center"
+                  style="width:64px;height:64px;"
                 >
-                  ỨNG VIÊN
+
+                  <i
+                    class="fa-solid fa-user fa-xl"
+                  ></i>
+
                 </div>
 
-                <div
-                  class="fs-4 fw-bold"
-                >
-                  ${escapeHtml(
-            fullName
-        )}
-                </div>
 
-                <div
-                  class="mt-1"
-                >
+                <div>
 
-                  <span
-                    class="badge ${statusClass}"
+                  <div
+                    class="text-muted small"
+                  >
+                    ỨNG VIÊN
+                  </div>
+
+                  <div
+                    class="fs-4 fw-bold"
                   >
                     ${escapeHtml(
-            status
-        )}
+                safeText(
+                    candidate?.fullName
+                )
+            )}
+                  </div>
+
+                  <span
+                    class="badge bg-secondary mt-1"
+                  >
+                    ${escapeHtml(
+                status
+            )}
                   </span>
 
                 </div>
@@ -2341,57 +2854,100 @@
 
           </div>
 
-        </div>
-
-
-        <div
-          class="col-md-6"
-        >
 
           <div
-            class="ui-card h-100"
+            class="col-md-6"
           >
 
             <div
-              class="ui-card-subtitle"
-            >
-              Thông tin liên hệ
-            </div>
-
-            <div
-              class="mt-3"
+              class="ui-card h-100"
             >
 
               <div
-                class="mb-3"
+                class="ui-card-subtitle"
+              >
+                Thông tin liên hệ
+              </div>
+
+              <div
+                class="mt-3"
               >
 
                 <div
-                  class="text-muted small mb-1"
+                  class="mb-3"
                 >
-                  Email
+
+                  <div
+                    class="text-muted small mb-1"
+                  >
+                    Email
+                  </div>
+
+                  <div>
+                    ${escapeHtml(
+                safeText(
+                    candidate?.email,
+                    'Chưa cập nhật'
+                )
+            )}
+                  </div>
+
                 </div>
+
 
                 <div>
-                  ${escapeHtml(
-            email
-        )}
+
+                  <div
+                    class="text-muted small mb-1"
+                  >
+                    Mã ứng viên
+                  </div>
+
+                  <code>
+                    #${id}
+                  </code>
+
                 </div>
 
               </div>
 
+            </div>
 
-              <div>
+          </div>
+
+
+          <div
+            class="col-md-6"
+          >
+
+            <div
+              class="ui-card h-100"
+            >
+
+              <div
+                class="ui-card-subtitle"
+              >
+                Thông tin nghề nghiệp
+              </div>
+
+              <div
+                class="mt-3"
+              >
 
                 <div
                   class="text-muted small mb-1"
                 >
-                  Mã ứng viên
+                  Vị trí hiện tại
                 </div>
 
-                <code>
-                  #${id}
-                </code>
+                <strong>
+                  ${escapeHtml(
+                safeText(
+                    candidate?.currentPosition,
+                    'Chưa cập nhật'
+                )
+            )}
+                </strong>
 
               </div>
 
@@ -2401,61 +2957,21 @@
 
         </div>
 
+      `;
 
-        <div
-          class="col-md-6"
-        >
-
-          <div
-            class="ui-card h-100"
-          >
-
-            <div
-              class="ui-card-subtitle"
-            >
-              Thông tin nghề nghiệp
-            </div>
-
-            <div
-              class="mt-3"
-            >
-
-              <div
-                class="text-muted small mb-1"
-              >
-                Vị trí hiện tại
-              </div>
-
-              <strong>
-                ${escapeHtml(
-            currentPosition
-        )}
-              </strong>
-
-            </div>
-
-          </div>
-
-        </div>
-
-      </div>
-
-    `;
+        }
 
 
         if (
-            modalEl &&
+            modal &&
             window.bootstrap?.Modal
         ) {
 
-            const modal =
-                window.bootstrap.Modal
-                    .getOrCreateInstance(
-                        modalEl
-                    );
-
-
-            modal.show();
+            window.bootstrap.Modal
+                .getOrCreateInstance(
+                    modal
+                )
+                .show();
 
         }
 
@@ -2463,817 +2979,694 @@
 
 
     // =======================================================
-    // JOB MODAL
+    // FE-30 - PIPELINE
     // =======================================================
 
-    function ensureRecruitmentJobModal() {
+    function ensureRecruitmentPipeline() {
 
-        let modal =
+        const section =
             getElement(
-                'modalAddRecruitmentJob'
+                'section-recruitment'
             );
 
 
-        if (modal) {
-            return modal;
+        if (!section) {
+            return null;
         }
 
 
-        modal =
+        let panel =
+            getElement(
+                'recruitmentPipeline'
+            );
+
+
+        if (panel) {
+            return panel;
+        }
+
+
+        panel =
             document.createElement(
                 'div'
             );
 
 
-        modal.id =
-            'modalAddRecruitmentJob';
+        panel.id =
+            'recruitmentPipeline';
 
 
-        modal.className =
-            'modal fade';
+        panel.className =
+            'table-box mb-4';
 
 
-        modal.tabIndex =
-            -1;
-
-
-        modal.setAttribute(
-            'aria-hidden',
-            'true'
-        );
-
-
-        modal.innerHTML = `
+        panel.innerHTML = `
 
       <div
-        class="modal-dialog modal-dialog-centered"
+        class="box-header"
       >
 
-        <div
-          class="modal-content border-0 shadow-lg"
-        >
+        <div>
 
-          <div
-            class="modal-header"
+          <h3
+            class="box-title"
           >
 
-            <div>
+            <i
+              class="fa-solid fa-route text-primary me-2"
+            ></i>
+
+            Recruitment Pipeline
+
+          </h3>
+
+          <div
+            class="text-muted small mt-1"
+          >
+            Theo dõi ứng viên theo từng giai đoạn tuyển dụng
+          </div>
+
+        </div>
+
+
+        <span
+          id="pipelineTotalCount"
+          class="ui-data-count"
+        >
+          0 ứng viên
+        </span>
+
+      </div>
+
+
+      <div
+        id="pipelineSummary"
+        class="px-3 pt-3"
+      ></div>
+
+
+      <div
+        id="recruitmentPipelineBoard"
+        class="pipeline-board px-3 pb-3 pt-2"
+      ></div>
+
+    `;
+
+
+        const candidatePanel =
+            getElement(
+                'recruitmentCandidateManagement'
+            );
+
+
+        if (candidatePanel) {
+
+            candidatePanel.insertAdjacentElement(
+                'afterend',
+                panel
+            );
+
+        } else {
+
+            const positionPanel =
+                getElement(
+                    'recruitmentPositionManagement'
+                );
+
+
+            if (positionPanel) {
+
+                positionPanel.insertAdjacentElement(
+                    'afterend',
+                    panel
+                );
+
+            } else {
+
+                section.prepend(
+                    panel
+                );
+
+            }
+
+        }
+
+
+        return panel;
+
+    }
+
+
+    function getPipelineStage(
+        candidate
+    ) {
+
+        const raw =
+            normalize(
+                candidate?.status
+            );
+
+
+        if (!raw) {
+
+            return 'received';
+
+        }
+
+
+        for (
+            const stage
+            of PIPELINE_STAGES
+        ) {
+
+            if (
+                stage.aliases.includes(
+                    raw
+                )
+            ) {
+
+                return stage.key;
+
+            }
+
+        }
+
+
+        return 'other';
+
+    }
+
+
+    function getPipelineStageInfo(
+        key
+    ) {
+
+        return PIPELINE_STAGES.find(
+            function (stage) {
+
+                return stage.key ===
+                    key;
+
+            }
+        ) || {
+
+            key:
+                'other',
+
+            title:
+                'Khác',
+
+            icon:
+                'fa-circle-question',
+
+            aliases:
+                []
+
+        };
+
+    }
+
+
+    function renderPipelineSummary() {
+
+        const container =
+            getElement(
+                'pipelineSummary'
+            );
+
+
+        if (!container) {
+            return;
+        }
+
+
+        const total =
+            recruitmentCandidates.length;
+
+
+        const chips =
+            PIPELINE_STAGES.map(
+                function (stage) {
+
+                    const count =
+                        recruitmentCandidates.filter(
+                            function (candidate) {
+
+                                return (
+                                    getPipelineStage(
+                                        candidate
+                                    ) ===
+                                    stage.key
+                                );
+
+                            }
+                        ).length;
+
+
+                    return `
 
               <div
-                class="text-muted small text-uppercase fw-bold"
-              >
-                Quản lý vị trí
-              </div>
-
-              <h5
-                class="modal-title"
+                class="d-inline-flex align-items-center gap-2 border rounded-pill px-3 py-2 me-2 mb-2 bg-white"
               >
 
                 <i
-                  class="fa-solid fa-briefcase me-2 text-primary"
+                  class="fa-solid ${stage.icon} text-primary"
                 ></i>
 
-                Thêm Vị Trí Tuyển Dụng
+                <span
+                  class="small fw-semibold"
+                >
+                  ${stage.title}
+                </span>
 
-              </h5>
+                <span
+                  class="badge bg-light text-dark border"
+                >
+                  ${count}
+                </span>
 
+              </div>
+
+            `;
+
+                }
+            ).join('');
+
+
+        container.innerHTML = `
+      <div
+        class="d-flex flex-wrap align-items-center"
+      >
+
+        ${chips}
+
+      </div>
+    `;
+
+
+        const totalElement =
+            getElement(
+                'pipelineTotalCount'
+            );
+
+
+        if (totalElement) {
+
+            totalElement.textContent =
+                `${total} ứng viên`;
+
+        }
+
+    }
+
+
+    function createPipelineCard(
+        candidate
+    ) {
+
+        const stage =
+            getPipelineStage(
+                candidate
+            );
+
+
+        const stageInfo =
+            getPipelineStageInfo(
+                stage
+            );
+
+
+        const status =
+            safeText(
+                candidate?.status,
+                'Chưa cập nhật'
+            );
+
+
+        return `
+
+      <div
+        class="border rounded-3 p-3 mb-2 bg-white shadow-sm"
+      >
+
+        <div
+          class="d-flex justify-content-between gap-2 align-items-start"
+        >
+
+          <div>
+
+            <div
+              class="fw-bold"
+            >
+              ${escapeHtml(
+            safeText(
+                candidate?.fullName
+            )
+        )}
             </div>
 
-
-            <button
-              type="button"
-              class="btn-close"
-              data-bs-dismiss="modal"
-              aria-label="Đóng"
-            ></button>
+            <div
+              class="small text-muted mt-1"
+            >
+              ${escapeHtml(
+            safeText(
+                candidate?.currentPosition,
+                'Chưa cập nhật'
+            )
+        )}
+            </div>
 
           </div>
 
 
-          <form
-            id="formAddRecruitmentJob"
+          <span
+            class="badge bg-light text-dark border"
+          >
+            #${safeNumber(
+            candidate?.id
+        )}
+          </span>
+
+        </div>
+
+
+        <div
+          class="small text-muted mt-2"
+        >
+
+          <i
+            class="fa-regular fa-envelope me-1"
+          ></i>
+
+          ${escapeHtml(
+            safeText(
+                candidate?.email,
+                'Chưa cập nhật'
+            )
+        )}
+
+        </div>
+
+
+        <div
+          class="mt-3 d-flex justify-content-between align-items-center gap-2"
+        >
+
+          <span
+            class="badge bg-primary-subtle text-primary"
           >
 
-            <div
-              class="modal-body"
-            >
+            <i
+              class="fa-solid ${stageInfo.icon} me-1"
+            ></i>
 
-              <div
-                id="recruitmentJobFormError"
-                class="mb-3"
-                style="display:none;"
-              ></div>
+            ${escapeHtml(
+            stageInfo.title
+        )}
 
-
-              <div
-                class="mb-3"
-              >
-
-                <label
-                  class="form-label fw-bold"
-                  for="recruitmentJobClientId"
-                >
-                  Khách hàng (Doanh nghiệp) *
-                </label>
-
-                <select
-                  id="recruitmentJobClientId"
-                  class="form-select"
-                  required
-                >
-
-                  <option value="">
-                    -- Chọn khách hàng --
-                  </option>
-
-                </select>
-
-              </div>
+          </span>
 
 
-              <div
-                class="mb-3"
-              >
+          <button
+            type="button"
+            class="btn btn-sm btn-outline-primary"
+            onclick="openCandidateDetail(${safeNumber(
+            candidate?.id
+        )})"
+            title="Xem chi tiết"
+          >
 
-                <label
-                  class="form-label fw-bold"
-                  for="recruitmentJobTitle"
-                >
-                  Vị trí tuyển dụng *
-                </label>
+            <i
+              class="fa-solid fa-eye"
+            ></i>
 
-                <input
-                  type="text"
-                  id="recruitmentJobTitle"
-                  class="form-control"
-                  placeholder="Ví dụ: Senior Data Engineer"
-                  maxlength="150"
-                  required
-                >
+          </button>
 
-              </div>
+        </div>
 
 
-              <div
-                class="mb-3"
-              >
-
-                <label
-                  class="form-label fw-bold"
-                  for="recruitmentJobDepartment"
-                >
-                  Phòng ban *
-                </label>
-
-                <input
-                  type="text"
-                  id="recruitmentJobDepartment"
-                  class="form-control"
-                  placeholder="Ví dụ: Công nghệ thông tin"
-                  maxlength="120"
-                  required
-                >
-
-              </div>
-
-
-              <div
-                class="row g-3"
-              >
-
-                <div
-                  class="col-md-8"
-                >
-
-                  <label
-                    class="form-label fw-bold"
-                    for="recruitmentJobSalary"
-                  >
-                    Dải lương
-                  </label>
-
-                  <input
-                    type="text"
-                    id="recruitmentJobSalary"
-                    class="form-control"
-                    placeholder="Ví dụ: 30 - 45 triệu VND"
-                  >
-
-                </div>
-
-
-                <div
-                  class="col-md-4"
-                >
-
-                  <label
-                    class="form-label fw-bold"
-                    for="recruitmentJobFeeRate"
-                  >
-                    Phí dịch vụ (%)
-                  </label>
-
-                  <input
-                    type="number"
-                    id="recruitmentJobFeeRate"
-                    class="form-control"
-                    value="18"
-                    min="0"
-                    max="100"
-                    step="0.1"
-                  >
-
-                </div>
-
-              </div>
-
-
-              <div
-                class="ui-alert ui-alert-info mt-3"
-              >
-
-                <i
-                  class="fa-solid fa-circle-info"
-                ></i>
-
-                <div>
-
-                  Vị trí mới sẽ được tạo ở trạng thái
-                  <strong>Đang tuyển</strong>.
-
-                </div>
-
-              </div>
-
-            </div>
-
-
-            <div
-              class="modal-footer"
-            >
-
-              <button
-                type="button"
-                class="btn btn-secondary"
-                data-bs-dismiss="modal"
-              >
-                Đóng
-              </button>
-
-
-              <button
-                type="submit"
-                class="btn btn-primary"
-              >
-
-                <i
-                  class="fa-solid fa-save me-1"
-                ></i>
-
-                Lưu Vị Trí
-
-              </button>
-
-            </div>
-
-          </form>
-
+        <div
+          class="small text-secondary mt-2"
+        >
+          Trạng thái API:
+          <strong>
+            ${escapeHtml(
+            status
+        )}
+          </strong>
         </div>
 
       </div>
 
     `;
 
+    }
 
-        document.body.appendChild(
-            modal
+
+    function renderRecruitmentPipeline() {
+
+        const board =
+            getElement(
+                'recruitmentPipelineBoard'
+            );
+
+
+        if (!board) {
+            return;
+        }
+
+
+        renderPipelineSummary();
+
+
+        if (
+            recruitmentCandidates.length ===
+            0
+        ) {
+
+            board.innerHTML = `
+
+        <div
+          class="ui-empty py-5"
+        >
+
+          <div
+            class="ui-empty-icon"
+          >
+
+            <i
+              class="fa-solid fa-route"
+            ></i>
+
+          </div>
+
+
+          <div
+            class="ui-empty-title"
+          >
+            Chưa có dữ liệu Pipeline
+          </div>
+
+
+          <div
+            class="ui-empty-text"
+          >
+            Chưa có ứng viên để phân bổ vào các giai đoạn tuyển dụng.
+          </div>
+
+        </div>
+
+      `;
+
+            return;
+
+        }
+
+
+        const grouped =
+        {};
+
+
+        PIPELINE_STAGES.forEach(
+            function (stage) {
+
+                grouped[
+                    stage.key
+                ] = [];
+
+            }
         );
 
 
-        const form =
-            getElement(
-                'formAddRecruitmentJob'
-            );
+        grouped.other =
+            [];
 
 
-        if (form) {
+        recruitmentCandidates.forEach(
+            function (candidate) {
 
-            form.addEventListener(
-                'submit',
-                function (event) {
-
-                    submitRecruitmentJob(
-                        event
+                const stage =
+                    getPipelineStage(
+                        candidate
                     );
 
+
+                if (
+                    !grouped[stage]
+                ) {
+
+                    grouped[
+                        stage
+                    ] = [];
+
                 }
-            );
-
-        }
 
 
-        return modal;
-
-    }
-
-
-    // =======================================================
-    // JOB FORM ERROR
-    // =======================================================
-
-    function clearRecruitmentJobFormError() {
-
-        const element =
-            getElement(
-                'recruitmentJobFormError'
-            );
-
-
-        if (!element) {
-            return;
-        }
-
-
-        element.style.display =
-            'none';
-
-
-        element.innerHTML =
-            '';
-
-    }
-
-
-    function showRecruitmentJobFormError(
-        message
-    ) {
-
-        const element =
-            getElement(
-                'recruitmentJobFormError'
-            );
-
-
-        if (!element) {
-            return;
-        }
-
-
-        element.style.display =
-            'block';
-
-
-        element.innerHTML = `
-      <div
-        class="ui-alert ui-alert-danger"
-      >
-
-        <i
-          class="fa-solid fa-circle-exclamation"
-        ></i>
-
-        <div>
-          ${escapeHtml(
-            message ||
-            'Vui lòng kiểm tra thông tin.'
-        )}
-        </div>
-
-      </div>
-    `;
-
-    }
-
-
-    // =======================================================
-    // LOAD CLIENTS FOR JOB
-    // =======================================================
-
-    async function loadClientsForRecruitmentJob() {
-
-        const select =
-            getElement(
-                'recruitmentJobClientId'
-            );
-
-
-        if (!select) {
-            return;
-        }
-
-
-        select.innerHTML = `
-      <option value="">
-        -- Đang tải khách hàng... --
-      </option>
-    `;
-
-
-        try {
-
-            const data =
-                await apiGet(
-                    '/clients'
+                grouped[
+                    stage
+                ].push(
+                    candidate
                 );
 
-
-            const clients =
-                Array.isArray(
-                    data?.clients
-                )
-                    ? data.clients
-                    : [];
-
-
-            select.innerHTML = `
-        <option value="">
-          -- Chọn khách hàng --
-        </option>
-      `;
-
-
-            if (
-                clients.length ===
-                0
-            ) {
-
-                select.innerHTML = `
-          <option value="">
-            (Chưa có khách hàng)
-          </option>
-        `;
-
-                return;
-
             }
+        );
 
 
-            clients.forEach(
-                function (client) {
-
-                    const option =
-                        document.createElement(
-                            'option'
-                        );
-
-
-                    option.value =
-                        client.id;
-
-
-                    option.textContent =
-                        safeText(
-                            client.companyName
-                        );
-
-
-                    select.appendChild(
-                        option
-                    );
-
+        const stageKeys = [
+            ...PIPELINE_STAGES.map(
+                function (stage) {
+                    return stage.key;
                 }
-            );
-
-
-        } catch (error) {
-
-            console.error(
-                'Lỗi tải khách hàng cho vị trí:',
-                error
-            );
-
-
-            select.innerHTML = `
-        <option value="">
-          (Không thể tải khách hàng)
-        </option>
-      `;
-
-        }
-
-    }
-
-
-    // =======================================================
-    // OPEN JOB MODAL
-    // =======================================================
-
-    async function openRecruitmentJobModal() {
-
-        const modalEl =
-            ensureRecruitmentJobModal();
-
-
-        const form =
-            getElement(
-                'formAddRecruitmentJob'
-            );
-
-
-        if (form) {
-            form.reset();
-        }
-
-
-        const feeRate =
-            getElement(
-                'recruitmentJobFeeRate'
-            );
-
-
-        if (feeRate) {
-            feeRate.value =
-                '18';
-        }
-
-
-        clearRecruitmentJobFormError();
-
-
-        await loadClientsForRecruitmentJob();
+            )
+        ];
 
 
         if (
-            modalEl &&
-            window.bootstrap?.Modal
+            grouped.other.length >
+            0
         ) {
 
-            const modal =
-                window.bootstrap.Modal
-                    .getOrCreateInstance(
-                        modalEl
-                    );
-
-
-            modal.show();
-
-
-        } else {
-
-            alert(
-                'Không tìm thấy hộp thoại thêm vị trí tuyển dụng!'
+            stageKeys.push(
+                'other'
             );
 
         }
 
-    }
+
+        board.innerHTML =
+            stageKeys
+                .map(
+                    function (key) {
+
+                        const info =
+                            getPipelineStageInfo(
+                                key
+                            );
 
 
-    // =======================================================
-    // SUBMIT JOB
-    // =======================================================
-
-    async function submitRecruitmentJob(
-        event
-    ) {
-
-        event.preventDefault();
+                        const items =
+                            grouped[key] || [];
 
 
-        clearRecruitmentJobFormError();
+                        return `
+
+                <div
+                  class="pipeline-column"
+                  style="
+                    min-width:260px;
+                    flex:1 1 260px;
+                    max-width:320px;
+                  "
+                >
+
+                  <div
+                    class="border rounded-3 bg-light h-100 overflow-hidden"
+                  >
+
+                    <div
+                      class="p-3 border-bottom bg-white"
+                    >
+
+                      <div
+                        class="d-flex justify-content-between align-items-center gap-2"
+                      >
+
+                        <div
+                          class="fw-bold"
+                        >
+
+                          <i
+                            class="fa-solid ${info.icon} text-primary me-1"
+                          ></i>
+
+                          ${escapeHtml(
+                            info.title
+                        )}
+
+                        </div>
 
 
-        const getValue =
-            function (id) {
+                        <span
+                          class="badge bg-primary"
+                        >
+                          ${items.length}
+                        </span>
 
-                const element =
-                    getElement(
-                        id
-                    );
+                      </div>
 
-
-                return element
-                    ? element.value.trim()
-                    : '';
-
-            };
+                    </div>
 
 
-        const clientId =
-            getValue(
-                'recruitmentJobClientId'
-            );
+                    <div
+                      class="p-2"
+                      style="min-height:180px;max-height:480px;overflow-y:auto;"
+                    >
 
+                      ${items.length ===
+                                0
 
-        const title =
-            getValue(
-                'recruitmentJobTitle'
-            );
+                                ? `
 
+                              <div
+                                class="text-center text-muted small py-4"
+                              >
 
-        const department =
-            getValue(
-                'recruitmentJobDepartment'
-            );
+                                <i
+                                  class="fa-solid fa-inbox mb-2"
+                                ></i>
 
+                                <div>
+                                  Chưa có ứng viên
+                                </div>
 
-        const salaryRange =
-            getValue(
-                'recruitmentJobSalary'
-            );
+                              </div>
 
+                            `
 
-        const feeRate =
-            Number(
-                getValue(
-                    'recruitmentJobFeeRate'
+                                : items
+                                    .map(
+                                        createPipelineCard
+                                    )
+                                    .join('')
+                            }
+
+                    </div>
+
+                  </div>
+
+                </div>
+
+              `;
+
+                    }
                 )
-            );
-
-
-        if (!clientId) {
-
-            showRecruitmentJobFormError(
-                'Vui lòng chọn khách hàng.'
-            );
-
-            return;
-
-        }
-
-
-        if (!title) {
-
-            showRecruitmentJobFormError(
-                'Vui lòng nhập vị trí tuyển dụng.'
-            );
-
-            return;
-
-        }
-
-
-        if (!department) {
-
-            showRecruitmentJobFormError(
-                'Vui lòng nhập phòng ban.'
-            );
-
-            return;
-
-        }
-
-
-        if (
-            !Number.isFinite(
-                feeRate
-            ) ||
-            feeRate < 0 ||
-            feeRate > 100
-        ) {
-
-            showRecruitmentJobFormError(
-                'Phí dịch vụ phải từ 0% đến 100%.'
-            );
-
-            return;
-
-        }
-
-
-        const submitButton =
-            event.submitter;
-
-
-        const originalHtml =
-            submitButton
-                ? submitButton.innerHTML
-                : '';
-
-
-        if (submitButton) {
-
-            submitButton.disabled =
-                true;
-
-
-            submitButton.innerHTML = `
-        <span
-          class="spinner-border spinner-border-sm me-1"
-        ></span>
-
-        Đang lưu...
-      `;
-
-        }
-
-
-        try {
-
-            const body = {
-
-                clientId:
-                    clientId,
-
-                title:
-                    title,
-
-                department:
-                    department,
-
-                salaryRange:
-                    salaryRange ||
-                    'Thỏa thuận',
-
-                feeRatePercent:
-                    feeRate
-
-            };
-
-
-            const data =
-                await apiPost(
-                    '/recruitment/jobs',
-                    body
-                );
-
-
-            if (
-                data?.success === false
-            ) {
-
-                throw new Error(
-                    data?.message ||
-                    'Không thể tạo vị trí tuyển dụng.'
-                );
-
-            }
-
-
-            const modalEl =
-                getElement(
-                    'modalAddRecruitmentJob'
-                );
-
-
-            if (modalEl) {
-
-                const modal =
-                    window.bootstrap?.Modal
-                        .getInstance(
-                            modalEl
-                        );
-
-
-                if (modal) {
-                    modal.hide();
-                }
-
-            }
-
-
-            alert(
-                data?.message ||
-                'Tạo vị trí tuyển dụng thành công!'
-            );
-
-
-            await loadRecruitmentDashboard();
-
-
-            await loadPlacements();
-
-
-        } catch (error) {
-
-            console.error(
-                'Lỗi tạo vị trí tuyển dụng:',
-                error
-            );
-
-
-            showRecruitmentJobFormError(
-                error?.message ||
-                'Lỗi kết nối máy chủ.'
-            );
-
-
-        } finally {
-
-            if (submitButton) {
-
-                submitButton.disabled =
-                    false;
-
-
-                submitButton.innerHTML =
-                    originalHtml ||
-                    `
-            <i
-              class="fa-solid fa-save me-1"
-            ></i>
-            Lưu Vị Trí
-          `;
-
-            }
-
-        }
+                .join('');
 
     }
 
 
     // =======================================================
-    // DASHBOARD UI
+    // FE-27 - DASHBOARD
     // =======================================================
 
     function ensureRecruitmentDashboard() {
@@ -3375,10 +3768,13 @@
             <div
               class="kpi-icon bg-primary-subtle text-primary"
             >
+
               <i
                 class="fa-solid fa-briefcase"
               ></i>
+
             </div>
+
 
             <div>
 
@@ -3413,10 +3809,13 @@
             <div
               class="kpi-icon bg-success-subtle text-success"
             >
+
               <i
                 class="fa-solid fa-door-open"
               ></i>
+
             </div>
+
 
             <div>
 
@@ -3451,10 +3850,13 @@
             <div
               class="kpi-icon bg-info-subtle text-info"
             >
+
               <i
                 class="fa-solid fa-users"
               ></i>
+
             </div>
+
 
             <div>
 
@@ -3489,10 +3891,13 @@
             <div
               class="kpi-icon bg-warning-subtle text-warning"
             >
+
               <i
                 class="fa-solid fa-user-check"
               ></i>
+
             </div>
+
 
             <div>
 
@@ -3636,26 +4041,23 @@
               class="box-header"
             >
 
-              <div>
+              <h3
+                class="box-title"
+              >
 
-                <h3
-                  class="box-title"
-                >
+                <i
+                  class="fa-solid fa-chart-pie text-primary me-2"
+                ></i>
 
-                  <i
-                    class="fa-solid fa-chart-pie text-primary me-2"
-                  ></i>
+                Trạng Thái Vị Trí
 
-                  Trạng Thái Vị Trí
-
-                </h3>
-
-              </div>
+              </h3>
 
             </div>
 
+
             <div
-              style="height: 300px;"
+              style="height:300px;"
               class="p-3"
             >
 
@@ -3682,26 +4084,23 @@
               class="box-header"
             >
 
-              <div>
+              <h3
+                class="box-title"
+              >
 
-                <h3
-                  class="box-title"
-                >
+                <i
+                  class="fa-solid fa-chart-donut text-success me-2"
+                ></i>
 
-                  <i
-                    class="fa-solid fa-chart-donut text-success me-2"
-                  ></i>
+                Trạng Thái Deal
 
-                  Trạng Thái Deal
-
-                </h3>
-
-              </div>
+              </h3>
 
             </div>
 
+
             <div
-              style="height: 300px;"
+              style="height:300px;"
               class="p-3"
             >
 
@@ -3720,17 +4119,17 @@
     `;
 
 
-        const tableBox =
+        const firstTable =
             section.querySelector(
                 '.table-box'
             );
 
 
-        if (tableBox) {
+        if (firstTable) {
 
             section.insertBefore(
                 dashboard,
-                tableBox
+                firstTable
             );
 
         } else {
@@ -3752,11 +4151,7 @@
 
             refreshButton.addEventListener(
                 'click',
-                function () {
-
-                    loadRecruitmentDashboard();
-
-                }
+                loadRecruitmentDashboard
             );
 
         }
@@ -3766,10 +4161,6 @@
 
     }
 
-
-    // =======================================================
-    // DASHBOARD KPI
-    // =======================================================
 
     function renderRecruitmentKpis() {
 
@@ -3781,10 +4172,12 @@
             recruitmentJobs.filter(
                 function (job) {
 
-                    return normalize(
-                        job?.status
-                    ) ===
-                        'opening';
+                    return (
+                        normalize(
+                            job?.status
+                        ) ===
+                        'opening'
+                    );
 
                 }
             ).length;
@@ -3798,7 +4191,7 @@
             recruitmentPlacements.length;
 
 
-        const warrantyPlacements =
+        const warranty =
             recruitmentPlacements.filter(
                 function (placement) {
 
@@ -3842,91 +4235,85 @@
                 : 0;
 
 
-        const jobsEl =
+        if (
             getElement(
                 'recruitmentKpiJobs'
-            );
+            )
+        ) {
 
-
-        const openJobsEl =
             getElement(
-                'recruitmentKpiOpenJobs'
-            );
-
-
-        const candidatesEl =
-            getElement(
-                'recruitmentKpiCandidates'
-            );
-
-
-        const placementsEl =
-            getElement(
-                'recruitmentKpiPlacements'
-            );
-
-
-        const warrantyEl =
-            getElement(
-                'recruitmentKpiWarranty'
-            );
-
-
-        const serviceFeeEl =
-            getElement(
-                'recruitmentKpiServiceFee'
-            );
-
-
-        const conversionEl =
-            getElement(
-                'recruitmentKpiConversion'
-            );
-
-
-        if (jobsEl) {
-
-            jobsEl.textContent =
+                'recruitmentKpiJobs'
+            ).textContent =
                 totalJobs;
 
         }
 
 
-        if (openJobsEl) {
+        if (
+            getElement(
+                'recruitmentKpiOpenJobs'
+            )
+        ) {
 
-            openJobsEl.textContent =
+            getElement(
+                'recruitmentKpiOpenJobs'
+            ).textContent =
                 openJobs;
 
         }
 
 
-        if (candidatesEl) {
+        if (
+            getElement(
+                'recruitmentKpiCandidates'
+            )
+        ) {
 
-            candidatesEl.textContent =
+            getElement(
+                'recruitmentKpiCandidates'
+            ).textContent =
                 totalCandidates;
 
         }
 
 
-        if (placementsEl) {
+        if (
+            getElement(
+                'recruitmentKpiPlacements'
+            )
+        ) {
 
-            placementsEl.textContent =
+            getElement(
+                'recruitmentKpiPlacements'
+            ).textContent =
                 totalPlacements;
 
         }
 
 
-        if (warrantyEl) {
+        if (
+            getElement(
+                'recruitmentKpiWarranty'
+            )
+        ) {
 
-            warrantyEl.textContent =
-                warrantyPlacements;
+            getElement(
+                'recruitmentKpiWarranty'
+            ).textContent =
+                warranty;
 
         }
 
 
-        if (serviceFeeEl) {
+        if (
+            getElement(
+                'recruitmentKpiServiceFee'
+            )
+        ) {
 
-            serviceFeeEl.textContent =
+            getElement(
+                'recruitmentKpiServiceFee'
+            ).textContent =
                 formatMoneySafe(
                     serviceFee
                 );
@@ -3934,9 +4321,15 @@
         }
 
 
-        if (conversionEl) {
+        if (
+            getElement(
+                'recruitmentKpiConversion'
+            )
+        ) {
 
-            conversionEl.textContent =
+            getElement(
+                'recruitmentKpiConversion'
+            ).textContent =
                 conversion.toFixed(1) +
                 '%';
 
@@ -3944,10 +4337,6 @@
 
     }
 
-
-    // =======================================================
-    // CHART EMPTY
-    // =======================================================
 
     function renderChartEmpty(
         canvasId,
@@ -4010,11 +4399,13 @@
 
       </div>
 
+
       <div
         class="ui-empty-title"
       >
         Chưa có dữ liệu
       </div>
+
 
       <div
         class="ui-empty-text"
@@ -4032,10 +4423,6 @@
 
     }
 
-
-    // =======================================================
-    // CHART STATE
-    // =======================================================
 
     function clearChartEmpty(
         canvasId
@@ -4068,9 +4455,7 @@
 
 
         if (empty) {
-
             empty.remove();
-
         }
 
 
@@ -4080,25 +4465,7 @@
     }
 
 
-    // =======================================================
-    // JOB STATUS CHART
-    // =======================================================
-
     function renderRecruitmentStatusChart() {
-
-        if (
-            typeof window.Chart ===
-            'undefined'
-        ) {
-
-            console.warn(
-                'Recruitment Dashboard: Chart.js chưa được tải.'
-            );
-
-            return;
-
-        }
-
 
         const canvas =
             getElement(
@@ -4111,14 +4478,26 @@
         }
 
 
+        if (
+            typeof window.Chart ===
+            'undefined'
+        ) {
+
+            return;
+
+        }
+
+
         const opening =
             recruitmentJobs.filter(
                 function (job) {
 
-                    return normalize(
-                        job?.status
-                    ) ===
-                        'opening';
+                    return (
+                        normalize(
+                            job?.status
+                        ) ===
+                        'opening'
+                    );
 
                 }
             ).length;
@@ -4128,10 +4507,12 @@
             recruitmentJobs.filter(
                 function (job) {
 
-                    return normalize(
-                        job?.status
-                    ) ===
-                        'closed';
+                    return (
+                        normalize(
+                            job?.status
+                        ) ===
+                        'closed'
+                    );
 
                 }
             ).length;
@@ -4179,7 +4560,9 @@
 
         recruitmentStatusChart =
             new Chart(
-                canvas.getContext('2d'),
+                canvas.getContext(
+                    '2d'
+                ),
                 {
                     type:
                         'doughnut',
@@ -4211,7 +4594,6 @@
 
                                 borderWidth:
                                     3
-
                             }
                         ]
 
@@ -4245,21 +4627,7 @@
     }
 
 
-    // =======================================================
-    // PLACEMENT STATUS CHART
-    // =======================================================
-
     function renderPlacementStatusChart() {
-
-        if (
-            typeof window.Chart ===
-            'undefined'
-        ) {
-
-            return;
-
-        }
-
 
         const canvas =
             getElement(
@@ -4272,14 +4640,26 @@
         }
 
 
+        if (
+            typeof window.Chart ===
+            'undefined'
+        ) {
+
+            return;
+
+        }
+
+
         const warranty =
             recruitmentPlacements.filter(
                 function (placement) {
 
-                    return normalize(
-                        placement?.status
-                    ) ===
-                        'underwarranty';
+                    return (
+                        normalize(
+                            placement?.status
+                        ) ===
+                        'underwarranty'
+                    );
 
                 }
             ).length;
@@ -4289,10 +4669,12 @@
             recruitmentPlacements.filter(
                 function (placement) {
 
-                    return normalize(
-                        placement?.status
-                    ) !==
-                        'underwarranty';
+                    return (
+                        normalize(
+                            placement?.status
+                        ) !==
+                        'underwarranty'
+                    );
 
                 }
             ).length;
@@ -4331,7 +4713,9 @@
 
         placementStatusChart =
             new Chart(
-                canvas.getContext('2d'),
+                canvas.getContext(
+                    '2d'
+                ),
                 {
                     type:
                         'doughnut',
@@ -4360,7 +4744,6 @@
 
                                 borderWidth:
                                     3
-
                             }
                         ]
 
@@ -4395,7 +4778,7 @@
 
 
     // =======================================================
-    // LOAD DASHBOARD DATA
+    // LOAD DASHBOARD
     // =======================================================
 
     async function loadRecruitmentDashboard() {
@@ -4403,6 +4786,8 @@
         ensurePositionManagement();
 
         ensureCandidateManagement();
+
+        ensureRecruitmentPipeline();
 
         ensureRecruitmentDashboard();
 
@@ -4432,7 +4817,7 @@
         try {
 
             const results =
-                await Promise.all([
+                await Promise.allSettled([
                     apiGet(
                         '/recruitment/jobs'
                     ),
@@ -4447,28 +4832,79 @@
                 ]);
 
 
-            recruitmentJobs =
-                Array.isArray(
-                    results[0]?.jobs
-                )
-                    ? results[0].jobs
-                    : [];
+            if (
+                results[0].status ===
+                'fulfilled'
+            ) {
+
+                recruitmentJobs =
+                    Array.isArray(
+                        results[0].value?.jobs
+                    )
+                        ? results[0].value.jobs
+                        : [];
+
+            } else {
+
+                recruitmentJobs =
+                    [];
+
+                console.error(
+                    'Lỗi tải danh sách vị trí:',
+                    results[0].reason
+                );
+
+            }
 
 
-            recruitmentCandidates =
-                Array.isArray(
-                    results[1]?.candidates
-                )
-                    ? results[1].candidates
-                    : [];
+            if (
+                results[1].status ===
+                'fulfilled'
+            ) {
+
+                recruitmentCandidates =
+                    Array.isArray(
+                        results[1].value?.candidates
+                    )
+                        ? results[1].value.candidates
+                        : [];
+
+            } else {
+
+                recruitmentCandidates =
+                    [];
+
+                console.error(
+                    'Lỗi tải danh sách ứng viên:',
+                    results[1].reason
+                );
+
+            }
 
 
-            recruitmentPlacements =
-                Array.isArray(
-                    results[2]?.placements
-                )
-                    ? results[2].placements
-                    : [];
+            if (
+                results[2].status ===
+                'fulfilled'
+            ) {
+
+                recruitmentPlacements =
+                    Array.isArray(
+                        results[2].value?.placements
+                    )
+                        ? results[2].value.placements
+                        : [];
+
+            } else {
+
+                recruitmentPlacements =
+                    [];
+
+                console.error(
+                    'Lỗi tải deal tuyển dụng:',
+                    results[2].reason
+                );
+
+            }
 
 
             populateCandidateStatusFilter();
@@ -4480,10 +4916,7 @@
             applyCandidateFilters();
 
 
-            clearPositionError();
-
-
-            clearCandidateError();
+            renderRecruitmentPipeline();
 
 
             renderRecruitmentKpis();
@@ -4495,25 +4928,10 @@
             renderPlacementStatusChart();
 
 
-            console.log(
-                'Recruitment dashboard loaded.',
-                {
-                    jobs:
-                        recruitmentJobs.length,
-
-                    candidates:
-                        recruitmentCandidates.length,
-
-                    placements:
-                        recruitmentPlacements.length
-                }
-            );
-
-
         } catch (error) {
 
             console.error(
-                'Lỗi tải Recruitment Dashboard:',
+                'Lỗi Recruitment Dashboard:',
                 error
             );
 
@@ -4521,10 +4939,8 @@
             recruitmentJobs =
                 [];
 
-
             recruitmentCandidates =
                 [];
-
 
             recruitmentPlacements =
                 [];
@@ -4532,30 +4948,16 @@
 
             applyPositionFilters();
 
-
             applyCandidateFilters();
 
-
-            showPositionError(
-                error?.message ||
-                'Không thể kết nối máy chủ.'
-            );
-
-
-            showCandidateError(
-                error?.message ||
-                'Không thể kết nối máy chủ.'
-            );
-
+            renderRecruitmentPipeline();
 
             renderRecruitmentKpis();
-
 
             renderChartEmpty(
                 'recruitmentStatusChart',
                 'Không thể tải dữ liệu vị trí.'
             );
-
 
             renderChartEmpty(
                 'placementStatusChart',
@@ -4574,7 +4976,6 @@
           <i
             class="fa-solid fa-rotate me-1"
           ></i>
-
           Làm mới
         `;
 
@@ -4586,7 +4987,7 @@
 
 
     // =======================================================
-    // LOAD PLACEMENTS
+    // PLACEMENTS
     // =======================================================
 
     async function loadPlacements() {
@@ -4656,7 +5057,7 @@
             placements.forEach(
                 function (placement) {
 
-                    const isWarranty =
+                    const warranty =
                         placement?.status ===
                         'UnderWarranty';
 
@@ -4732,17 +5133,15 @@
               <td>
 
                 <span
-                  class="status-badge ${isWarranty
+                  class="status-badge ${warranty
                             ? 'badge-warranty'
                             : 'badge-passed'
                         }"
                 >
-
                   ${escapeHtml(
                             placement?.status ||
                             '-'
                         )}
-
                 </span>
 
               </td>
@@ -4751,6 +5150,7 @@
               <td>
 
                 ${hasInvoice
+
                             ? `
                       <span
                         class="badge bg-success"
@@ -4763,6 +5163,7 @@
                             )}
                       </span>
                     `
+
                             : `
                       <button
                         class="btn btn-sm btn-outline-primary"
@@ -4838,26 +5239,26 @@
 
     async function openModalAddPlacement() {
 
-        const formEl =
+        const form =
             getElement(
                 'formAddPlacement'
             );
 
 
-        if (formEl) {
-            formEl.reset();
+        if (form) {
+            form.reset();
         }
 
 
-        const onboardDateEl =
+        const onboardDate =
             getElement(
                 'placementOnboardDate'
             );
 
 
-        if (onboardDateEl) {
+        if (onboardDate) {
 
-            onboardDateEl.valueAsDate =
+            onboardDate.valueAsDate =
                 new Date();
 
         }
@@ -4877,12 +5278,20 @@
                 ]);
 
 
-            const clientsData =
-                results[0];
+            const clients =
+                Array.isArray(
+                    results[0]?.clients
+                )
+                    ? results[0].clients
+                    : [];
 
 
-            const candidatesData =
-                results[1];
+            const candidates =
+                Array.isArray(
+                    results[1]?.candidates
+                )
+                    ? results[1].candidates
+                    : [];
 
 
             const clientSelect =
@@ -4893,128 +5302,106 @@
 
             if (clientSelect) {
 
-                clientSelect.innerHTML =
-                    `
-            <option value="">
-              -- Chọn khách hàng --
-            </option>
-          `;
+                clientSelect.innerHTML = `
+          <option value="">
+            -- Chọn khách hàng --
+          </option>
+        `;
 
 
-                (
-                    Array.isArray(
-                        clientsData?.clients
-                    )
-                        ? clientsData.clients
-                        : []
-                )
-                    .forEach(
-                        function (client) {
+                clients.forEach(
+                    function (client) {
 
-                            const option =
-                                document.createElement(
-                                    'option'
-                                );
-
-
-                            option.value =
-                                client.id;
-
-
-                            option.textContent =
-                                safeText(
-                                    client.companyName
-                                );
-
-
-                            clientSelect.appendChild(
-                                option
+                        const option =
+                            document.createElement(
+                                'option'
                             );
 
-                        }
-                    );
+
+                        option.value =
+                            client.id;
+
+
+                        option.textContent =
+                            safeText(
+                                client.companyName
+                            );
+
+
+                        clientSelect.appendChild(
+                            option
+                        );
+
+                    }
+                );
 
             }
 
 
-            const candSelect =
+            const candidateSelect =
                 getElement(
                     'placementCandidateId'
                 );
 
 
-            if (candSelect) {
+            if (candidateSelect) {
 
-                candSelect.innerHTML =
-                    `
-            <option value="">
-              -- Chọn ứng viên --
-            </option>
-          `;
-
-
-                (
-                    Array.isArray(
-                        candidatesData?.candidates
-                    )
-                        ? candidatesData.candidates
-                        : []
-                )
-                    .forEach(
-                        function (candidate) {
-
-                            const option =
-                                document.createElement(
-                                    'option'
-                                );
+                candidateSelect.innerHTML = `
+          <option value="">
+            -- Chọn ứng viên --
+          </option>
+        `;
 
 
-                            option.value =
-                                candidate.id;
+                candidates.forEach(
+                    function (candidate) {
 
-
-                            option.textContent =
-                                safeText(
-                                    candidate.fullName
-                                ) +
-                                ' (' +
-                                safeText(
-                                    candidate.currentPosition,
-                                    ''
-                                ) +
-                                ')';
-
-
-                            candSelect.appendChild(
-                                option
+                        const option =
+                            document.createElement(
+                                'option'
                             );
 
-                        }
-                    );
+
+                        option.value =
+                            candidate.id;
+
+
+                        option.textContent =
+                            `${safeText(
+                                candidate.fullName
+                            )} (${safeText(
+                                candidate.currentPosition,
+                                ''
+                            )
+                            })`;
+
+
+                        candidateSelect.appendChild(
+                            option
+                        );
+
+                    }
+                );
 
             }
 
 
-            const modalEl =
+            const modal =
                 getElement(
                     'modalAddPlacement'
                 );
 
 
             if (
-                modalEl &&
+                modal &&
                 window.bootstrap?.Modal
             ) {
 
-                const modal =
-                    window.bootstrap.Modal
-                        .getOrCreateInstance(
-                            modalEl
-                        );
-
-
-                modal.show();
-
+                window.bootstrap.Modal
+                    .getOrCreateInstance(
+                        modal
+                    )
+                    .show();
 
             } else {
 
@@ -5043,10 +5430,6 @@
     }
 
 
-    // =======================================================
-    // SELECT CLIENT FOR PLACEMENT
-    // =======================================================
-
     async function onSelectClientForPlacement() {
 
         const clientSelect =
@@ -5072,20 +5455,24 @@
         }
 
 
-        jobSelect.innerHTML =
-            `
+        if (!clientId) {
+
+            jobSelect.innerHTML = `
         <option value="">
-          ${clientId
-                ? '-- Đang tải vị trí... --'
-                : '-- Chọn khách hàng trước --'
-            }
+          -- Chọn khách hàng trước --
         </option>
       `;
 
-
-        if (!clientId) {
             return;
+
         }
+
+
+        jobSelect.innerHTML = `
+      <option value="">
+        -- Đang tải vị trí... --
+      </option>
+    `;
 
 
         try {
@@ -5108,12 +5495,14 @@
                 jobs.filter(
                     function (job) {
 
-                        return String(
-                            job?.clientId
-                        ) ===
+                        return (
+                            String(
+                                job?.clientId
+                            ) ===
                             String(
                                 clientId
-                            );
+                            )
+                        );
 
                     }
                 );
@@ -5128,46 +5517,45 @@
                 0
             ) {
 
-                jobSelect.innerHTML =
-                    `
-            <option value="">
-              (Khách hàng này chưa có Job mở)
-            </option>
-          `;
+                jobSelect.innerHTML = `
+          <option value="">
+            (Khách hàng này chưa có Job mở)
+          </option>
+        `;
 
                 return;
 
             }
 
 
-            clientJobs
-                .forEach(
-                    function (job) {
+            clientJobs.forEach(
+                function (job) {
 
-                        const option =
-                            document.createElement(
-                                'option'
-                            );
-
-
-                        option.value =
-                            job.id;
-
-
-                        option.textContent =
-                            `${safeText(
-                                job.title
-                            )} (${safeText(
-                                job.department
-                            )})`;
-
-
-                        jobSelect.appendChild(
-                            option
+                    const option =
+                        document.createElement(
+                            'option'
                         );
 
-                    }
-                );
+
+                    option.value =
+                        job.id;
+
+
+                    option.textContent =
+                        `${safeText(
+                            job.title
+                        )} (${safeText(
+                            job.department
+                        )
+                        })`;
+
+
+                    jobSelect.appendChild(
+                        option
+                    );
+
+                }
+            );
 
 
         } catch (error) {
@@ -5178,58 +5566,33 @@
             );
 
 
-            jobSelect.innerHTML =
-                `
-          <option value="">
-            (Lỗi tải danh sách job)
-          </option>
-        `;
+            jobSelect.innerHTML = `
+        <option value="">
+          (Lỗi tải danh sách job)
+        </option>
+      `;
 
         }
 
     }
 
 
-    // =======================================================
-    // CALC FEE
-    // =======================================================
-
     function calcPlacementFee() {
-
-        const salaryEl =
-            getElement(
-                'placementSalary'
-            );
-
-
-        const rateEl =
-            getElement(
-                'placementFeeRate'
-            );
-
-
-        const estimatedFeeEl =
-            getElement(
-                'placementEstFee'
-            );
-
 
         const salary =
             parseFloat(
-                salaryEl
-                    ? salaryEl.value
-                    : 0
-            ) ||
-            0;
+                getElement(
+                    'placementSalary'
+                )?.value
+            ) || 0;
 
 
         const rate =
             parseFloat(
-                rateEl
-                    ? rateEl.value
-                    : 18
-            ) ||
-            18;
+                getElement(
+                    'placementFeeRate'
+                )?.value
+            ) || 18;
 
 
         const fee =
@@ -5241,9 +5604,15 @@
             );
 
 
-        if (estimatedFeeEl) {
+        const estimatedFee =
+            getElement(
+                'placementEstFee'
+            );
 
-            estimatedFeeEl.value =
+
+        if (estimatedFee) {
+
+            estimatedFee.value =
                 formatMoneySafe(
                     fee
                 );
@@ -5253,94 +5622,86 @@
     }
 
 
-    // =======================================================
-    // SUBMIT PLACEMENT
-    // =======================================================
+    async function submitAddPlacement(
+        event
+    ) {
 
-    async function submitAddPlacement(e) {
-
-        e.preventDefault();
+        event.preventDefault();
 
 
-        const getVal =
-            function (id) {
+        function valueOf(id) {
 
-                const element =
-                    getElement(
-                        id
-                    );
+            return (
+                getElement(
+                    id
+                )?.value ||
+                ''
+            );
 
-
-                return element
-                    ? element.value
-                    : '';
-
-            };
+        }
 
 
         const body = {
 
             clientId:
-                getVal(
+                valueOf(
                     'placementClientId'
                 ),
 
             jobId:
-                getVal(
+                valueOf(
                     'placementJobId'
                 ),
 
             candidateId:
-                getVal(
+                valueOf(
                     'placementCandidateId'
                 ),
 
             officialSalary:
-                getVal(
+                valueOf(
                     'placementSalary'
                 ),
 
             feeRatePercent:
-                getVal(
+                valueOf(
                     'placementFeeRate'
                 ),
 
             onboardDate:
-                getVal(
+                valueOf(
                     'placementOnboardDate'
                 ),
 
             warrantyDays:
-                getVal(
+                valueOf(
                     'placementWarrantyDays'
                 )
 
         };
 
 
-        const submitButton =
-            e.submitter;
+        const button =
+            event.submitter;
 
 
         const originalHtml =
-            submitButton
-                ? submitButton.innerHTML
+            button
+                ? button.innerHTML
                 : '';
 
 
-        if (submitButton) {
+        if (button) {
 
-            submitButton.disabled =
+            button.disabled =
                 true;
 
 
-            submitButton.innerHTML = `
+            button.innerHTML = `
         <span
           class="spinner-border spinner-border-sm me-1"
         ></span>
-
         Đang xử lý...
-
       `;
 
         }
@@ -5356,50 +5717,45 @@
 
 
             if (
-                data?.success
+                data?.success ===
+                false
             ) {
 
-                const modalEl =
-                    getElement(
-                        'modalAddPlacement'
-                    );
-
-
-                if (modalEl) {
-
-                    const modal =
-                        window.bootstrap?.Modal
-                            .getInstance(
-                                modalEl
-                            );
-
-
-                    if (modal) {
-                        modal.hide();
-                    }
-
-                }
-
-
-                alert(
-                    'Ghi nhận deal tuyển dụng thành công!'
-                );
-
-
-                await loadPlacements();
-
-
-                await loadRecruitmentDashboard();
-
-
-            } else {
-
-                alert(
+                throw new Error(
                     data?.message ||
-                    'Lỗi khi chốt deal!'
+                    'Không thể ghi nhận deal.'
                 );
 
             }
+
+
+            const modal =
+                getElement(
+                    'modalAddPlacement'
+                );
+
+
+            if (
+                modal &&
+                window.bootstrap?.Modal
+            ) {
+
+                window.bootstrap.Modal
+                    .getInstance(
+                        modal
+                    )
+                    ?.hide();
+
+            }
+
+
+            alert(
+                data?.message ||
+                'Ghi nhận deal tuyển dụng thành công!'
+            );
+
+
+            await loadPlacements();
 
 
         } catch (error) {
@@ -5417,19 +5773,18 @@
 
         } finally {
 
-            if (submitButton) {
+            if (button) {
 
-                submitButton.disabled =
+                button.disabled =
                     false;
 
 
-                submitButton.innerHTML =
+                button.innerHTML =
                     originalHtml ||
                     `
             <i
               class="fa-solid fa-check me-1"
             ></i>
-
             Chốt Deal
           `;
 
@@ -5448,14 +5803,14 @@
         placementId
     ) {
 
-        const confirmed =
-            window.confirm(
+        if (
+            !window.confirm(
                 'Bạn có chắc chắn muốn phát hành hóa đơn VAT cho deal tuyển dụng này?'
-            );
+            )
+        ) {
 
-
-        if (!confirmed) {
             return;
+
         }
 
 
@@ -5487,10 +5842,6 @@
 
                 await loadPlacements();
 
-
-                await loadRecruitmentDashboard();
-
-
             } else {
 
                 alert(
@@ -5499,7 +5850,6 @@
                 );
 
             }
-
 
         } catch (error) {
 
@@ -5520,7 +5870,7 @@
 
 
     // =======================================================
-    // EXPORT GLOBAL FUNCTIONS
+    // GLOBAL EXPORT
     // =======================================================
 
     window.loadPlacements =
@@ -5569,6 +5919,10 @@
 
     window.openCandidateDetail =
         openCandidateDetail;
+
+
+    window.renderRecruitmentPipeline =
+        renderRecruitmentPipeline;
 
 
 })(window);
