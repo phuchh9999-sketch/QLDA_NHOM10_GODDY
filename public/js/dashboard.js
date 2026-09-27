@@ -1,22 +1,26 @@
 /**
  * =========================================================
  * GODDY RECRUIT - Dashboard Module
- * FE-13: Dashboard KPI
+ * FE-13 / FE-14
  * =========================================================
  *
- * Chức năng:
- * - Tải KPI Dashboard từ Backend API
- * - Hiển thị doanh thu, công nợ, nợ quá hạn, deal
- * - Hiển thị tỷ lệ thu hồi / nợ quá hạn
- * - Vẽ biểu đồ doanh thu theo tháng
- * - Vẽ biểu đồ cơ cấu khách hàng
- * - Hiển thị Top 5 doanh nghiệp công nợ
- * - Có trạng thái loading / error / empty
+ * FE-13:
+ * - Tải KPI Dashboard
+ * - Loading / Error / Empty state
+ * - Top 5 doanh nghiệp công nợ
+ *
+ * FE-14:
+ * - Tối ưu Line Chart doanh thu
+ * - Tối ưu Doughnut Chart cơ cấu ngành
+ * - Responsive khi resize
+ * - Tooltip rõ ràng
+ * - Empty state khi không có dữ liệu biểu đồ
  * =========================================================
  */
 
 (function (window) {
     'use strict';
+
 
     // =======================================================
     // HELPERS
@@ -51,6 +55,7 @@
 
 
     function formatMoneySafe(value) {
+
         if (typeof window.formatMoney === 'function') {
             return window.formatMoney(
                 safeNumber(value)
@@ -75,7 +80,7 @@
 
 
     // =======================================================
-    // UI STATE
+    // DASHBOARD UI STATE
     // =======================================================
 
     function showDashboardLoading() {
@@ -89,14 +94,17 @@
             'valBadDebtRate'
         ];
 
-        targets.forEach((id) => {
-            const element = getElement(id);
+        targets.forEach(function (id) {
+
+            const element =
+                getElement(id);
 
             if (element) {
                 element.classList.add(
                     'placeholder-glow'
                 );
             }
+
         });
 
     }
@@ -113,14 +121,17 @@
             'valBadDebtRate'
         ];
 
-        targets.forEach((id) => {
-            const element = getElement(id);
+        targets.forEach(function (id) {
+
+            const element =
+                getElement(id);
 
             if (element) {
                 element.classList.remove(
                     'placeholder-glow'
                 );
             }
+
         });
 
     }
@@ -135,6 +146,7 @@
             existing.remove();
         }
 
+
         const dashboardSection =
             getElement('section-dashboard');
 
@@ -142,7 +154,9 @@
             return;
         }
 
-        const alert = document.createElement('div');
+
+        const alert =
+            document.createElement('div');
 
         alert.id =
             'dashboardErrorAlert';
@@ -152,10 +166,12 @@
 
         alert.innerHTML = `
       <i class="fa-solid fa-circle-exclamation mt-1"></i>
+
       <div>
         <div class="fw-bold">
           Không thể tải dữ liệu Dashboard
         </div>
+
         <div class="small">
           ${escapeHtml(
             message ||
@@ -165,7 +181,10 @@
       </div>
     `;
 
-        dashboardSection.prepend(alert);
+        dashboardSection.prepend(
+            alert
+        );
+
     }
 
 
@@ -177,6 +196,7 @@
         if (existing) {
             existing.remove();
         }
+
     }
 
 
@@ -279,7 +299,7 @@
         tbody.innerHTML =
             items
                 .slice(0, 5)
-                .map((item) => {
+                .map(function (item) {
 
                     return `
             <tr>
@@ -334,42 +354,620 @@
 
 
     // =======================================================
-    // CHARTS
+    // CHART EMPTY STATE
+    // =======================================================
+
+    function showChartEmptyState(
+        canvas,
+        message
+    ) {
+
+        if (!canvas) {
+            return;
+        }
+
+
+        const parent =
+            canvas.parentElement;
+
+        if (!parent) {
+            return;
+        }
+
+
+        let empty =
+            parent.querySelector(
+                '.dashboard-chart-empty'
+            );
+
+
+        if (!empty) {
+
+            empty =
+                document.createElement(
+                    'div'
+                );
+
+            empty.className =
+                'dashboard-chart-empty ui-empty';
+
+            parent.appendChild(
+                empty
+            );
+        }
+
+
+        empty.innerHTML = `
+      <div class="ui-empty-icon">
+        <i class="fa-solid fa-chart-simple"></i>
+      </div>
+
+      <div class="ui-empty-title">
+        Chưa có dữ liệu biểu đồ
+      </div>
+
+      <div class="ui-empty-text">
+        ${escapeHtml(
+            message ||
+            'Chưa có dữ liệu để hiển thị.'
+        )}
+      </div>
+    `;
+
+
+        canvas.style.display =
+            'none';
+
+    }
+
+
+    function hideChartEmptyState(
+        canvas
+    ) {
+
+        if (!canvas) {
+            return;
+        }
+
+
+        const parent =
+            canvas.parentElement;
+
+        if (!parent) {
+            return;
+        }
+
+
+        const empty =
+            parent.querySelector(
+                '.dashboard-chart-empty'
+            );
+
+
+        if (empty) {
+            empty.remove();
+        }
+
+
+        canvas.style.display =
+            'block';
+
+    }
+
+
+    // =======================================================
+    // DESTROY CHARTS
     // =======================================================
 
     function destroyExistingCharts() {
 
         if (
-            typeof window.revenueChartInstance !==
-            'undefined' &&
-            window.revenueChartInstance
+            window.revenueChartInstance &&
+            typeof window.revenueChartInstance.destroy ===
+            'function'
         ) {
 
             window.revenueChartInstance.destroy();
 
-            window.revenueChartInstance = null;
+            window.revenueChartInstance =
+                null;
         }
 
 
         if (
-            typeof window.industryChartInstance !==
-            'undefined' &&
-            window.industryChartInstance
+            window.industryChartInstance &&
+            typeof window.industryChartInstance.destroy ===
+            'function'
         ) {
 
             window.industryChartInstance.destroy();
 
-            window.industryChartInstance = null;
+            window.industryChartInstance =
+                null;
         }
 
     }
 
 
-    function initCharts(chartData = {}) {
+    // =======================================================
+    // REVENUE CHART
+    // =======================================================
+
+    function createRevenueChart(
+        chartData
+    ) {
+
+        const canvas =
+            getElement(
+                'revenueChart'
+            );
+
+        if (!canvas) {
+            return;
+        }
+
+
+        const labels =
+            Array.isArray(
+                chartData?.labels
+            )
+                ? chartData.labels
+                : [];
+
+
+        const data =
+            Array.isArray(
+                chartData?.revenueByMonth
+            )
+                ? chartData.revenueByMonth.map(
+                    safeNumber
+                )
+                : [];
+
 
         if (
-            typeof Chart === 'undefined'
+            labels.length === 0 ||
+            data.length === 0
         ) {
+
+            showChartEmptyState(
+                canvas,
+                'Chưa có dữ liệu doanh thu theo tháng.'
+            );
+
+            return;
+        }
+
+
+        hideChartEmptyState(
+            canvas
+        );
+
+
+        const context =
+            canvas.getContext(
+                '2d'
+            );
+
+
+        if (!context) {
+            return;
+        }
+
+
+        window.revenueChartInstance =
+            new Chart(
+                context,
+                {
+                    type: 'line',
+
+                    data: {
+                        labels: labels,
+
+                        datasets: [
+                            {
+                                label:
+                                    'Doanh thu thực tế',
+
+                                data: data,
+
+                                borderColor:
+                                    '#4f46e5',
+
+                                backgroundColor:
+                                    'rgba(79, 70, 229, 0.08)',
+
+                                fill: true,
+
+                                tension: 0.35,
+
+                                borderWidth: 3,
+
+                                pointRadius: 3,
+
+                                pointHoverRadius: 6,
+
+                                pointHoverBorderWidth: 2
+                            }
+                        ]
+                    },
+
+
+                    options: {
+
+                        responsive: true,
+
+                        maintainAspectRatio: true,
+
+                        interaction: {
+                            mode: 'index',
+
+                            intersect: false
+                        },
+
+
+                        animation: {
+                            duration: 600
+                        },
+
+
+                        plugins: {
+
+                            legend: {
+                                display: false
+                            },
+
+
+                            tooltip: {
+
+                                backgroundColor:
+                                    '#0f172a',
+
+                                titleColor:
+                                    '#fff',
+
+                                bodyColor:
+                                    '#e2e8f0',
+
+                                borderColor:
+                                    '#334155',
+
+                                borderWidth: 1,
+
+                                padding: 11,
+
+                                displayColors: false,
+
+                                callbacks: {
+
+                                    label:
+                                        function (context) {
+
+                                            return (
+                                                'Doanh thu: ' +
+                                                safeNumber(
+                                                    context.raw
+                                                ).toLocaleString(
+                                                    'vi-VN'
+                                                ) +
+                                                ' triệu VNĐ'
+                                            );
+
+                                        }
+
+                                }
+
+                            }
+
+                        },
+
+
+                        scales: {
+
+                            y: {
+
+                                beginAtZero: true,
+
+                                grid: {
+                                    color: '#f1f5f9'
+                                },
+
+                                border: {
+                                    display: false
+                                },
+
+                                ticks: {
+
+                                    color:
+                                        '#64748b',
+
+                                    padding: 8,
+
+                                    callback:
+                                        function (value) {
+                                            return (
+                                                Number(value).toLocaleString(
+                                                    'vi-VN'
+                                                ) +
+                                                ' tr'
+                                            );
+                                        }
+
+                                }
+
+                            },
+
+
+                            x: {
+
+                                grid: {
+                                    display: false
+                                },
+
+                                border: {
+                                    display: false
+                                },
+
+                                ticks: {
+
+                                    color:
+                                        '#64748b',
+
+                                    maxRotation: 0,
+
+                                    autoSkip: true
+
+                                }
+
+                            }
+
+                        }
+
+                    }
+
+                }
+            );
+
+    }
+
+
+    // =======================================================
+    // INDUSTRY CHART
+    // =======================================================
+
+    function createIndustryChart(
+        chartData
+    ) {
+
+        const canvas =
+            getElement(
+                'industryChart'
+            );
+
+        if (!canvas) {
+            return;
+        }
+
+
+        const industry =
+            chartData?.industryShare ||
+            {};
+
+
+        const labels =
+            Array.isArray(
+                industry.labels
+            )
+                ? industry.labels
+                : [];
+
+
+        const data =
+            Array.isArray(
+                industry.series
+            )
+                ? industry.series.map(
+                    safeNumber
+                )
+                : [];
+
+
+        if (
+            labels.length === 0 ||
+            data.length === 0
+        ) {
+
+            showChartEmptyState(
+                canvas,
+                'Chưa có dữ liệu cơ cấu khách hàng theo ngành.'
+            );
+
+            return;
+        }
+
+
+        hideChartEmptyState(
+            canvas
+        );
+
+
+        const context =
+            canvas.getContext(
+                '2d'
+            );
+
+
+        if (!context) {
+            return;
+        }
+
+
+        window.industryChartInstance =
+            new Chart(
+                context,
+                {
+                    type: 'doughnut',
+
+                    data: {
+
+                        labels: labels,
+
+                        datasets: [
+                            {
+                                data: data,
+
+                                backgroundColor: [
+                                    '#4f46e5',
+                                    '#10b981',
+                                    '#f59e0b',
+                                    '#ec4899',
+                                    '#64748b'
+                                ],
+
+                                borderColor:
+                                    '#ffffff',
+
+                                borderWidth: 3,
+
+                                hoverOffset: 6
+                            }
+                        ]
+
+                    },
+
+
+                    options: {
+
+                        responsive: true,
+
+                        maintainAspectRatio: true,
+
+                        cutout: '62%',
+
+
+                        animation: {
+                            duration: 600
+                        },
+
+
+                        plugins: {
+
+                            legend: {
+
+                                position: 'bottom',
+
+                                labels: {
+
+                                    color:
+                                        '#475569',
+
+                                    boxWidth: 12,
+
+                                    boxHeight: 12,
+
+                                    padding: 14,
+
+                                    usePointStyle: true,
+
+                                    pointStyle:
+                                        'circle',
+
+                                    font: {
+                                        size: 11
+                                    }
+
+                                }
+
+                            },
+
+
+                            tooltip: {
+
+                                backgroundColor:
+                                    '#0f172a',
+
+                                titleColor:
+                                    '#fff',
+
+                                bodyColor:
+                                    '#e2e8f0',
+
+                                borderColor:
+                                    '#334155',
+
+                                borderWidth: 1,
+
+                                padding: 11,
+
+                                callbacks: {
+
+                                    label:
+                                        function (context) {
+
+                                            const value =
+                                                safeNumber(
+                                                    context.raw
+                                                );
+
+                                            const total =
+                                                data.reduce(
+                                                    function (
+                                                        sum,
+                                                        item
+                                                    ) {
+                                                        return sum + item;
+                                                    },
+                                                    0
+                                                );
+
+                                            const percentage =
+                                                total > 0
+                                                    ? (
+                                                        value /
+                                                        total *
+                                                        100
+                                                    ).toFixed(1)
+                                                    : '0.0';
+
+                                            return (
+                                                ' ' +
+                                                context.label +
+                                                ': ' +
+                                                value +
+                                                ' (' +
+                                                percentage +
+                                                '%)'
+                                            );
+
+                                        }
+
+                                }
+
+                            }
+
+                        }
+
+                    }
+
+                }
+            );
+
+    }
+
+
+    // =======================================================
+    // INITIALIZE CHARTS
+    // =======================================================
+
+    function initCharts(
+        chartData = {}
+    ) {
+
+        if (
+            typeof Chart ===
+            'undefined'
+        ) {
+
             console.warn(
                 'Dashboard: Chart.js chưa được tải.'
             );
@@ -381,244 +979,14 @@
         destroyExistingCharts();
 
 
-        // -----------------------------------------------------
-        // REVENUE CHART
-        // -----------------------------------------------------
-
-        const revenueCanvas =
-            getElement('revenueChart');
+        createRevenueChart(
+            chartData
+        );
 
 
-        const labels =
-            Array.isArray(
-                chartData.labels
-            )
-                ? chartData.labels
-                : [];
-
-
-        const revenueData =
-            Array.isArray(
-                chartData.revenueByMonth
-            )
-                ? chartData.revenueByMonth.map(
-                    safeNumber
-                )
-                : [];
-
-
-        if (
-            revenueCanvas &&
-            labels.length > 0
-        ) {
-
-            const context =
-                revenueCanvas.getContext(
-                    '2d'
-                );
-
-
-            const chart =
-                new Chart(
-                    context,
-                    {
-                        type: 'line',
-
-                        data: {
-                            labels,
-
-                            datasets: [
-                                {
-                                    label:
-                                        'Doanh thu thực tế (triệu VNĐ)',
-
-                                    data:
-                                        revenueData,
-
-                                    borderColor:
-                                        '#4f46e5',
-
-                                    backgroundColor:
-                                        'rgba(79, 70, 229, 0.08)',
-
-                                    fill: true,
-
-                                    tension: 0.35,
-
-                                    borderWidth: 3,
-
-                                    pointRadius: 4,
-
-                                    pointHoverRadius: 6
-                                }
-                            ]
-                        },
-
-                        options: {
-                            responsive: true,
-
-                            maintainAspectRatio: true,
-
-                            interaction: {
-                                mode: 'index',
-
-                                intersect: false
-                            },
-
-                            plugins: {
-                                legend: {
-                                    display: false
-                                },
-
-                                tooltip: {
-                                    callbacks: {
-                                        label: function (context) {
-                                            return (
-                                                ' ' +
-                                                safeNumber(
-                                                    context.raw
-                                                ).toLocaleString(
-                                                    'vi-VN'
-                                                ) +
-                                                ' triệu VNĐ'
-                                            );
-                                        }
-                                    }
-                                }
-                            },
-
-                            scales: {
-                                y: {
-                                    beginAtZero: true,
-
-                                    grid: {
-                                        color: '#f1f5f9'
-                                    },
-
-                                    ticks: {
-                                        callback: function (value) {
-                                            return value + ' tr';
-                                        }
-                                    }
-                                },
-
-                                x: {
-                                    grid: {
-                                        display: false
-                                    }
-                                }
-                            }
-                        }
-                    }
-                );
-
-
-            window.revenueChartInstance =
-                chart;
-        }
-
-
-        // -----------------------------------------------------
-        // INDUSTRY CHART
-        // -----------------------------------------------------
-
-        const industryCanvas =
-            getElement('industryChart');
-
-
-        const industryShare =
-            chartData.industryShare || {};
-
-
-        const industryLabels =
-            Array.isArray(
-                industryShare.labels
-            )
-                ? industryShare.labels
-                : [];
-
-
-        const industrySeries =
-            Array.isArray(
-                industryShare.series
-            )
-                ? industryShare.series.map(
-                    safeNumber
-                )
-                : [];
-
-
-        if (
-            industryCanvas &&
-            industryLabels.length > 0
-        ) {
-
-            const context =
-                industryCanvas.getContext(
-                    '2d'
-                );
-
-
-            const chart =
-                new Chart(
-                    context,
-                    {
-                        type: 'doughnut',
-
-                        data: {
-                            labels:
-                                industryLabels,
-
-                            datasets: [
-                                {
-                                    data:
-                                        industrySeries,
-
-                                    backgroundColor: [
-                                        '#4f46e5',
-                                        '#10b981',
-                                        '#f59e0b',
-                                        '#ec4899',
-                                        '#64748b'
-                                    ],
-
-                                    borderWidth: 2,
-
-                                    borderColor: '#fff'
-                                }
-                            ]
-                        },
-
-                        options: {
-                            responsive: true,
-
-                            maintainAspectRatio: true,
-
-                            cutout: '62%',
-
-                            plugins: {
-                                legend: {
-                                    position: 'bottom',
-
-                                    labels: {
-                                        boxWidth: 12,
-
-                                        padding: 14,
-
-                                        font: {
-                                            size: 11
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                );
-
-
-            window.industryChartInstance =
-                chart;
-        }
+        createIndustryChart(
+            chartData
+        );
 
     }
 
@@ -639,7 +1007,6 @@
             let data;
 
 
-            // Ưu tiên API Layer đã xây dựng ở FE-06 / FE-07
             if (
                 window.GoddyAPI &&
                 typeof window.GoddyAPI.get ===
@@ -653,7 +1020,6 @@
 
             } else {
 
-                // Fallback an toàn nếu API Layer chưa được load
                 const response =
                     await fetch(
                         '/api/dashboard/stats'
@@ -673,6 +1039,7 @@
                     data?.message ||
                     'API Dashboard trả về dữ liệu không hợp lệ.'
                 );
+
             }
 
 
@@ -687,9 +1054,15 @@
 
 
             if (data.chartData) {
+
                 initCharts(
                     data.chartData
                 );
+
+            } else {
+
+                initCharts({});
+
             }
 
 
@@ -718,10 +1091,13 @@
             );
 
 
-            // Đảm bảo Dashboard vẫn có giá trị mặc định
             renderKpis({});
 
+
             renderTopDebtors([]);
+
+
+            initCharts({});
 
         }
 
