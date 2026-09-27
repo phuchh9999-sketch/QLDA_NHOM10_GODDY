@@ -1,110 +1,48 @@
 /**
- * =========================================================
- * GODDY ERP - Frontend API Layer
- * FE-06
- * NGUYEN_HOANG_PHUOC
- * =========================================================
+ * GODDY RECRUIT - API Layer
+ * FE-06 / FE-07
  *
  * Mục đích:
- * - Tập trung xử lý HTTP request tới Backend.
- * - Tự động quản lý JWT token.
- * - Chuẩn hóa URL, headers, body và response.
- * - Chuẩn hóa lỗi API.
- * - Hỗ trợ JSON và FormData.
- * - Cho phép các module frontend sử dụng API chung.
- *
- * Lưu ý:
- * - Không thay thế logic API hiện tại của các module.
- * - Không tự ý khai báo endpoint chưa được backend xác nhận.
- * - Việc chuyển từng module sang GoddyAPI sẽ thực hiện
- *   ở các FE task tương ứng.
- * =========================================================
+ * - Tập trung toàn bộ giao tiếp giữa Frontend và Backend API
+ * - Tự động gắn token đăng nhập khi gọi API
+ * - Chuẩn hóa xử lý response / error
+ * - Cung cấp namespace GoddyAPI cho các module frontend
  */
 
 (function (window) {
     'use strict';
 
+    // =========================================================
+    // CONFIG
+    // =========================================================
 
-    // =====================================================
-    // 1. CONFIG
-    // =====================================================
+    const API_BASE_URL = '/api';
 
-    const API_CONFIG = {
-        baseUrl: '/api',
-        timeout: 15000,
-        defaultHeaders: {
-            Accept: 'application/json'
-        }
-    };
+    const TOKEN_KEY = 'goddy_token';
+    const USER_KEY = 'goddy_user';
 
 
-    // =====================================================
-    // 2. AUTH STORAGE
-    // =====================================================
+    // =========================================================
+    // STORAGE
+    // =========================================================
 
     function getToken() {
-        try {
-            return localStorage.getItem('goddy_token') || null;
-        } catch (error) {
-            console.warn(
-                '[GoddyAPI] Không thể đọc goddy_token:',
-                error
-            );
+        return localStorage.getItem(TOKEN_KEY) || '';
+    }
 
+
+    function getUser() {
+        const rawUser = localStorage.getItem(USER_KEY);
+
+        if (!rawUser) {
             return null;
         }
-    }
 
-
-    function setToken(token) {
         try {
-            if (token) {
-                localStorage.setItem(
-                    'goddy_token',
-                    token
-                );
-            } else {
-                localStorage.removeItem(
-                    'goddy_token'
-                );
-            }
-        } catch (error) {
-            console.warn(
-                '[GoddyAPI] Không thể lưu goddy_token:',
-                error
-            );
-        }
-    }
-
-
-    function clearToken() {
-        try {
-            localStorage.removeItem(
-                'goddy_token'
-            );
-        } catch (error) {
-            console.warn(
-                '[GoddyAPI] Không thể xóa goddy_token:',
-                error
-            );
-        }
-    }
-
-
-    function getCurrentUser() {
-        try {
-            const rawUser =
-                localStorage.getItem('goddy_user');
-
-            if (!rawUser) {
-                return null;
-            }
-
             return JSON.parse(rawUser);
-
         } catch (error) {
             console.warn(
-                '[GoddyAPI] Không thể đọc goddy_user:',
+                'GoddyAPI: Không thể đọc goddy_user.',
                 error
             );
 
@@ -113,326 +51,166 @@
     }
 
 
-    function setCurrentUser(user) {
-        try {
-            if (user) {
-                localStorage.setItem(
-                    'goddy_user',
-                    JSON.stringify(user)
-                );
-            } else {
-                localStorage.removeItem(
-                    'goddy_user'
-                );
-            }
+    function setAuth(token, user) {
 
-        } catch (error) {
-            console.warn(
-                '[GoddyAPI] Không thể lưu goddy_user:',
-                error
+        if (token) {
+            localStorage.setItem(
+                TOKEN_KEY,
+                token
             );
         }
-    }
 
-
-    function clearCurrentUser() {
-        try {
-            localStorage.removeItem(
-                'goddy_user'
-            );
-        } catch (error) {
-            console.warn(
-                '[GoddyAPI] Không thể xóa goddy_user:',
-                error
+        if (user) {
+            localStorage.setItem(
+                USER_KEY,
+                JSON.stringify(user)
             );
         }
     }
 
 
     function clearAuth() {
-        clearToken();
-        clearCurrentUser();
+        localStorage.removeItem(TOKEN_KEY);
+        localStorage.removeItem(USER_KEY);
     }
 
 
-    function isAuthenticated() {
-        return !!getToken();
-    }
+    // =========================================================
+    // BUILD REQUEST
+    // =========================================================
 
+    function buildHeaders(customHeaders = {}) {
 
-    // =====================================================
-    // 3. URL BUILDER
-    // =====================================================
-
-    function buildUrl(
-        endpoint,
-        queryParams
-    ) {
-        let cleanEndpoint =
-            endpoint || '';
-
-
-        // Đảm bảo endpoint bắt đầu bằng /
-        if (!cleanEndpoint.startsWith('/')) {
-            cleanEndpoint =
-                '/' + cleanEndpoint;
-        }
-
-
-        let url =
-            API_CONFIG.baseUrl +
-            cleanEndpoint;
-
-
-        // Query string
-        if (
-            queryParams &&
-            typeof queryParams === 'object'
-        ) {
-            const searchParams =
-                new URLSearchParams();
-
-
-            Object.keys(queryParams).forEach(
-                function (key) {
-                    const value =
-                        queryParams[key];
-
-
-                    if (
-                        value !== undefined &&
-                        value !== null &&
-                        value !== ''
-                    ) {
-                        searchParams.append(
-                            key,
-                            String(value)
-                        );
-                    }
-                }
-            );
-
-
-            const queryString =
-                searchParams.toString();
-
-
-            if (queryString) {
-                url += '?' + queryString;
-            }
-        }
-
-
-        return url;
-    }
-
-
-    // =====================================================
-    // 4. HEADERS
-    // =====================================================
-
-    function buildHeaders(
-        body,
-        customHeaders
-    ) {
         const headers = {
-            ...API_CONFIG.defaultHeaders,
-            ...(customHeaders || {})
+            'Content-Type': 'application/json',
+            ...customHeaders
         };
 
-
-        const token =
-            getToken();
-
+        const token = getToken();
 
         if (token) {
             headers.Authorization =
-                'Bearer ' + token;
+                `Bearer ${token}`;
         }
-
-
-        /*
-         * Không set Content-Type cho FormData.
-         * Browser tự tạo multipart boundary.
-         */
-        if (
-            !(body instanceof FormData) &&
-            !headers['Content-Type']
-        ) {
-            headers['Content-Type'] =
-                'application/json';
-        }
-
 
         return headers;
     }
 
 
-    // =====================================================
-    // 5. BODY PREPARATION
-    // =====================================================
+    // =========================================================
+    // NORMALIZE URL
+    // =========================================================
 
-    function prepareBody(body) {
+    function buildUrl(endpoint) {
+
+        if (!endpoint) {
+            return API_BASE_URL;
+        }
+
         if (
-            body === undefined ||
-            body === null
+            endpoint.startsWith('http://') ||
+            endpoint.startsWith('https://')
         ) {
-            return undefined;
+            return endpoint;
         }
 
-
-        // FormData
-        if (body instanceof FormData) {
-            return body;
+        if (endpoint.startsWith('/api/')) {
+            return endpoint;
         }
 
-
-        // Blob
-        if (body instanceof Blob) {
-            return body;
+        if (endpoint.startsWith('/')) {
+            return API_BASE_URL + endpoint;
         }
 
-
-        // String
-        if (typeof body === 'string') {
-            return body;
-        }
-
-
-        // Object / Array
-        return JSON.stringify(body);
+        return API_BASE_URL + '/' + endpoint;
     }
 
 
-    // =====================================================
-    // 6. RESPONSE PARSER
-    // =====================================================
+    // =========================================================
+    // HANDLE RESPONSE
+    // =========================================================
 
-    async function parseResponse(
-        response
-    ) {
-        const contentType =
-            response.headers.get(
-                'content-type'
-            ) || '';
+    async function parseResponse(response) {
 
-
-        if (
-            contentType.includes(
-                'application/json'
-            )
-        ) {
-            try {
-                return await response.json();
-            } catch (error) {
-                return null;
-            }
-        }
-
+        let data = null;
 
         try {
-            return await response.text();
+            data = await response.json();
         } catch (error) {
-            return null;
+
+            // Backend không trả JSON
+            data = null;
         }
+
+
+        if (!response.ok) {
+
+            const message =
+                data?.message ||
+                data?.error ||
+                `HTTP ${response.status}: ${response.statusText}`;
+
+            const apiError =
+                new Error(message);
+
+            apiError.status =
+                response.status;
+
+            apiError.data =
+                data;
+
+            throw apiError;
+        }
+
+
+        return data;
     }
 
 
-    // =====================================================
-    // 7. API ERROR
-    // =====================================================
+    // =========================================================
+    // GENERIC REQUEST
+    // =========================================================
 
-    function createApiError(
-        message,
-        status,
-        data
-    ) {
-        const error =
-            new Error(
-                message ||
-                'API request failed'
-            );
-
-
-        error.status =
-            status || 0;
-
-
-        error.data =
-            data || null;
-
-
-        return error;
-    }
-
-
-    // =====================================================
-    // 8. CORE REQUEST
-    // =====================================================
-
-    async function apiRequest(
+    async function request(
         endpoint,
-        options
+        options = {}
     ) {
-        const requestOptions =
-            options || {};
+
+        const {
+            method = 'GET',
+            body,
+            headers = {},
+            ...rest
+        } = options;
 
 
-        const method =
-            requestOptions.method ||
-            'GET';
+        const config = {
+            method,
+            headers: buildHeaders(headers),
+            ...rest
+        };
 
 
-        const body =
-            prepareBody(
-                requestOptions.body
-            );
+        if (body !== undefined && body !== null) {
 
-
-        const headers =
-            buildHeaders(
-                requestOptions.body,
-                requestOptions.headers
-            );
+            config.body =
+                typeof body === 'string'
+                    ? body
+                    : JSON.stringify(body);
+        }
 
 
         const url =
-            buildUrl(
-                endpoint,
-                requestOptions.query
-            );
-
-
-        const controller =
-            new AbortController();
-
-
-        const timeoutId =
-            setTimeout(
-                function () {
-                    controller.abort();
-                },
-                API_CONFIG.timeout
-            );
+            buildUrl(endpoint);
 
 
         try {
+
             const response =
                 await fetch(
                     url,
-                    {
-                        method: method,
-                        headers: headers,
-                        body: body,
-                        signal:
-                            controller.signal,
-                        credentials:
-                            'same-origin'
-                    }
+                    config
                 );
-
-
-            clearTimeout(timeoutId);
 
 
             const data =
@@ -441,500 +219,360 @@
                 );
 
 
-            // ---------------------------------------------
-            // Unauthorized
-            // ---------------------------------------------
-
-            if (
-                response.status === 401
-            ) {
-                clearAuth();
-
-
-                throw createApiError(
-                    'Phiên đăng nhập đã hết hạn hoặc không hợp lệ.',
-                    401,
-                    data
-                );
-            }
-
-
-            // ---------------------------------------------
-            // HTTP error
-            // ---------------------------------------------
-
-            if (!response.ok) {
-                let message =
-                    'API request thất bại.';
-
-
-                if (
-                    data &&
-                    typeof data === 'object'
-                ) {
-                    message =
-                        data.message ||
-                        data.error ||
-                        message;
-                }
-
-
-                throw createApiError(
-                    message,
-                    response.status,
-                    data
-                );
-            }
-
-
-            // ---------------------------------------------
-            // Success
-            // ---------------------------------------------
-
             return data;
 
         } catch (error) {
 
-            clearTimeout(timeoutId);
+            console.error(
+                `GoddyAPI request error [${method} ${url}]`,
+                error
+            );
 
-
-            // Timeout
-            if (
-                error &&
-                error.name ===
-                'AbortError'
-            ) {
-                throw createApiError(
-                    'Kết nối tới máy chủ quá thời gian chờ.',
-                    408,
-                    null
-                );
-            }
-
-
-            // Network error
-            if (
-                error &&
-                error instanceof TypeError
-            ) {
-                throw createApiError(
-                    'Không thể kết nối tới Backend API.',
-                    0,
-                    null
-                );
-            }
-
-
-            // API error
             throw error;
         }
     }
 
 
-    // =====================================================
-    // 9. HTTP METHODS
-    // =====================================================
-
-    function apiGet(
-        endpoint,
-        query
-    ) {
-        return apiRequest(
-            endpoint,
-            {
-                method: 'GET',
-                query: query
-            }
-        );
-    }
-
-
-    function apiPost(
-        endpoint,
-        body
-    ) {
-        return apiRequest(
-            endpoint,
-            {
-                method: 'POST',
-                body: body
-            }
-        );
-    }
-
-
-    function apiPut(
-        endpoint,
-        body
-    ) {
-        return apiRequest(
-            endpoint,
-            {
-                method: 'PUT',
-                body: body
-            }
-        );
-    }
-
-
-    function apiPatch(
-        endpoint,
-        body
-    ) {
-        return apiRequest(
-            endpoint,
-            {
-                method: 'PATCH',
-                body: body
-            }
-        );
-    }
-
-
-    function apiDelete(
-        endpoint
-    ) {
-        return apiRequest(
-            endpoint,
-            {
-                method: 'DELETE'
-            }
-        );
-    }
-
-
-    // =====================================================
-    // 10. AUTH API
-    // =====================================================
-    /*
-     * Endpoint này đã được frontend hiện tại sử dụng:
-     * POST /api/auth/login
-     *
-     * Tuy nhiên FE-06 chưa thay submitLogin() hiện tại.
-     * FE-07 mới chuyển login sang GoddyAPI.login().
-     */
-
-    async function login(
-        username,
-        password
-    ) {
-        const response =
-            await apiPost(
-                '/auth/login',
-                {
-                    username:
-                        username,
-                    password:
-                        password
-                }
-            );
-
-
-        if (
-            response &&
-            response.token
-        ) {
-            setToken(
-                response.token
-            );
-        }
-
-
-        if (
-            response &&
-            response.user
-        ) {
-            setCurrentUser(
-                response.user
-            );
-        }
-
-
-        return response;
-    }
-
-
-    function logout() {
-        clearAuth();
-
-        return true;
-    }
-
-
-    // =====================================================
-    // 11. CLIENT API
-    // =====================================================
-    /*
-     * /api/clients đã được module clients.js hiện tại sử dụng.
-     */
-
-    function getClients(
-        query
-    ) {
-        return apiGet(
-            '/clients',
-            query
-        );
-    }
-
-
-    function getClient(
-        clientId
-    ) {
-        return apiGet(
-            '/clients/' +
-            encodeURIComponent(
-                clientId
-            )
-        );
-    }
-
-
-    function createClient(
-        clientData
-    ) {
-        return apiPost(
-            '/clients',
-            clientData
-        );
-    }
-
-
-    function updateClient(
-        clientId,
-        clientData
-    ) {
-        return apiPut(
-            '/clients/' +
-            encodeURIComponent(
-                clientId
-            ),
-            clientData
-        );
-    }
-
-
-    function deleteClient(
-        clientId
-    ) {
-        return apiDelete(
-            '/clients/' +
-            encodeURIComponent(
-                clientId
-            )
-        );
-    }
-
-
-    function getClientPortalData(
-        clientId
-    ) {
-        return apiGet(
-            '/clients/portal/' +
-            encodeURIComponent(
-                clientId
-            )
-        );
-    }
-
-
-    // =====================================================
-    // 12. GENERIC API
-    // =====================================================
+    // =========================================================
+    // HTTP HELPERS
+    // =========================================================
 
     function get(
         endpoint,
-        query
+        options = {}
     ) {
-        return apiGet(
+
+        return request(
             endpoint,
-            query
+            {
+                ...options,
+                method: 'GET'
+            }
         );
     }
 
 
     function post(
         endpoint,
-        body
+        body = null,
+        options = {}
     ) {
-        return apiPost(
+
+        return request(
             endpoint,
-            body
+            {
+                ...options,
+                method: 'POST',
+                body
+            }
         );
     }
 
 
     function put(
         endpoint,
-        body
+        body = null,
+        options = {}
     ) {
-        return apiPut(
+
+        return request(
             endpoint,
-            body
+            {
+                ...options,
+                method: 'PUT',
+                body
+            }
         );
     }
 
 
     function patch(
         endpoint,
-        body
+        body = null,
+        options = {}
     ) {
-        return apiPatch(
+
+        return request(
             endpoint,
-            body
+            {
+                ...options,
+                method: 'PATCH',
+                body
+            }
         );
     }
 
 
-    function remove(
-        endpoint
+    function del(
+        endpoint,
+        options = {}
     ) {
-        return apiDelete(
-            endpoint
+
+        return request(
+            endpoint,
+            {
+                ...options,
+                method: 'DELETE'
+            }
         );
     }
 
 
-    // =====================================================
-    // 13. PUBLIC OBJECT
-    // =====================================================
+    // =========================================================
+    // AUTH API
+    // =========================================================
 
-    const GoddyAPI = {
+    const auth = {
 
-        // Config
-        config:
-            API_CONFIG,
+        /**
+         * POST /api/auth/login
+         *
+         * Backend hiện tại nhận:
+         * {
+         *   username,
+         *   password
+         * }
+         */
+        async login(
+            username,
+            password
+        ) {
 
-
-        // Auth storage
-        getToken:
-            getToken,
-
-        setToken:
-            setToken,
-
-        clearToken:
-            clearToken,
-
-
-        getCurrentUser:
-            getCurrentUser,
-
-        setCurrentUser:
-            setCurrentUser,
-
-        clearCurrentUser:
-            clearCurrentUser,
+            if (!username) {
+                throw new Error(
+                    'Tên đăng nhập không được để trống.'
+                );
+            }
 
 
-        clearAuth:
-            clearAuth,
-
-        isAuthenticated:
-            isAuthenticated,
-
-
-        // Core
-        request:
-            apiRequest,
+            if (!password) {
+                throw new Error(
+                    'Mật khẩu không được để trống.'
+                );
+            }
 
 
-        // HTTP
-        get:
-            apiGet,
-
-        post:
-            apiPost,
-
-        put:
-            apiPut,
-
-        patch:
-            apiPatch,
-
-        delete:
-            apiDelete,
+            const data =
+                await post(
+                    '/auth/login',
+                    {
+                        username,
+                        password
+                    }
+                );
 
 
-        // Authentication
-        login:
-            login,
+            // Nếu backend trả token/user,
+            // đồng bộ luôn vào localStorage.
+            if (
+                data &&
+                data.success &&
+                data.token
+            ) {
 
-        logout:
-            logout,
+                setAuth(
+                    data.token,
+                    data.user || null
+                );
+            }
 
 
-        // Client
-        clients: {
-            list:
-                getClients,
+            return data;
+        },
 
-            get:
-                getClient,
 
-            create:
-                createClient,
+        logout() {
 
-            update:
-                updateClient,
+            clearAuth();
 
-            delete:
-                deleteClient,
+            return true;
+        },
 
-            portal:
-                getClientPortalData
+
+        getToken() {
+            return getToken();
+        },
+
+
+        getCurrentUser() {
+            return getUser();
+        },
+
+
+        isLoggedIn() {
+            return Boolean(
+                getToken()
+            );
         }
     };
 
 
-    // =====================================================
-    // 14. GLOBAL EXPORT
-    // =====================================================
+    // =========================================================
+    // CLIENT API
+    // =========================================================
+
+    const clients = {
+
+        /**
+         * GET /api/clients
+         */
+        list(params = {}) {
+
+            const query =
+                new URLSearchParams(
+                    params
+                ).toString();
+
+            const endpoint =
+                query
+                    ? `/clients?${query}`
+                    : '/clients';
+
+            return get(endpoint);
+        },
+
+
+        /**
+         * GET /api/clients/:id
+         */
+        detail(clientId) {
+
+            if (!clientId) {
+                throw new Error(
+                    'clientId không hợp lệ.'
+                );
+            }
+
+            return get(
+                `/clients/${clientId}`
+            );
+        },
+
+
+        /**
+         * POST /api/clients
+         */
+        create(data) {
+
+            return post(
+                '/clients',
+                data
+            );
+        },
+
+
+        /**
+         * PUT /api/clients/:id
+         */
+        update(
+            clientId,
+            data
+        ) {
+
+            if (!clientId) {
+                throw new Error(
+                    'clientId không hợp lệ.'
+                );
+            }
+
+            return put(
+                `/clients/${clientId}`,
+                data
+            );
+        },
+
+
+        /**
+         * DELETE /api/clients/:id
+         */
+        remove(clientId) {
+
+            if (!clientId) {
+                throw new Error(
+                    'clientId không hợp lệ.'
+                );
+            }
+
+            return del(
+                `/clients/${clientId}`
+            );
+        },
+
+
+        /**
+         * GET /api/clients/portal/:id
+         */
+        portal(clientId) {
+
+            if (!clientId) {
+                throw new Error(
+                    'clientId không hợp lệ.'
+                );
+            }
+
+            return get(
+                `/clients/portal/${clientId}`
+            );
+        }
+    };
+
+
+    // =========================================================
+    // GENERIC API NAMESPACE
+    // =========================================================
+
+    const GoddyAPI = {
+
+        // Cấu hình
+        config: {
+            baseUrl: API_BASE_URL,
+            tokenKey: TOKEN_KEY,
+            userKey: USER_KEY
+        },
+
+        // HTTP
+        request,
+        get,
+        post,
+        put,
+        patch,
+        delete: del,
+
+        // Authentication
+        auth,
+
+        // Clients
+        clients,
+
+        // Storage helpers
+        storage: {
+            getToken,
+            getUser,
+            setAuth,
+            clearAuth
+        }
+    };
+
+
+    // =========================================================
+    // EXPORT GLOBAL
+    // =========================================================
 
     window.GoddyAPI =
         GoddyAPI;
 
 
-    /*
-     * Backward-compatible global methods.
-     *
-     * Các module cũ chưa dùng ngay,
-     * nhưng FE sau có thể dùng:
-     *
-     * apiGet(...)
-     * apiPost(...)
-     * apiPut(...)
-     * apiPatch(...)
-     * apiDelete(...)
-     */
-
-    window.apiRequest =
-        apiRequest;
-
-    window.apiGet =
-        apiGet;
-
-    window.apiPost =
-        apiPost;
-
-    window.apiPut =
-        apiPut;
-
-    window.apiPatch =
-        apiPatch;
-
-    window.apiDelete =
-        apiDelete;
-
-
-    // =====================================================
-    // 15. INITIALIZATION LOG
-    // =====================================================
+    // =========================================================
+    // DEBUG / INITIALIZATION
+    // =========================================================
 
     console.log(
-        '[GoddyAPI] API Layer đã khởi tạo.',
-        'Base URL:',
-        API_CONFIG.baseUrl
+        'GoddyAPI đã được khởi tạo.',
+        {
+            baseUrl: API_BASE_URL,
+            loggedIn: Boolean(getToken()),
+            user: getUser()
+        }
     );
 
 })(window);
