@@ -1,0 +1,53 @@
+# =========================================================
+# GODDY ERP - Frontend Git Ignore
+# =========================================================
+
+# Visual Studio
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Build output
+bin/
+obj/
+out/
+
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Environment variables
+.env
+.env.local
+.env.development
+.env.production
+
+# Logs
+*.log
+
+# OS generated files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+
+# IDE
+.idea/
+.vscode/
+
+# Coverage
+coverage/
+
+# Cache
+.cache/
+.parcel-cache/
+/database.sqlite
